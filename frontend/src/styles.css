@@ -422,8 +422,8 @@ legend { padding: 0; }
 
 /* ---------- Ajuda ---------- */
 .help { gap: 16px; font-size: 14px; line-height: 1.5; }
-.help h2 { font-size: 14px; font-weight: 700; margin-top: 18px; }
-.help h2::before { content: '• '; }
+.help h2 { font-size: 15px; font-weight: 700; margin-top: 18px; text-align: center; }
+.help > p, .help__legend > span { text-align: justify; hyphens: auto; -webkit-hyphens: auto; }
 .help__card { margin: 8px 0; }
 .help__legend { display: flex; gap: 10px; align-items: flex-start; }
 .help__legend svg { flex-shrink: 0; }
