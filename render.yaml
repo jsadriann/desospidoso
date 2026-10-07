@@ -1,0 +1,28 @@
+# Configuração para o Render (https://render.com) — "New > Blueprint" lê este arquivo.
+# Cria um único Web Service que serve o site (React) e a API no mesmo endereço.
+services:
+  - type: web
+    name: desospidoso
+    runtime: node
+    plan: free
+    buildCommand: npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: DATABASE_URL # connection string do Neon (preencher no painel do Render)
+        sync: false
+      - key: JWT_SECRET # gerado automaticamente pelo Render
+        generateValue: true
+      - key: APP_TIMEZONE
+        value: America/Fortaleza
+      # Opcional: e-mail real para "Esqueci minha senha"
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false

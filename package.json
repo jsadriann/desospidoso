@@ -1,0 +1,14 @@
+{
+  "name": "desospidoso",
+  "private": true,
+  "version": "1.1.0",
+  "description": "DesospIdoso - hospitalização e desospitalização de idosos (frontend React + API Node/PostgreSQL)",
+  "engines": {
+    "node": ">=18.18"
+  },
+  "scripts": {
+    "build": "npm install --prefix backend --omit=dev && npm install --prefix frontend --include=dev && npm run build --prefix frontend",
+    "start": "npm start --prefix backend",
+    "seed": "npm run seed --prefix backend"
+  }
+}

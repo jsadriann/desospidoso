@@ -1,0 +1,20 @@
+# Dependências (são instaladas com npm install)
+node_modules/
+
+# Senhas e configurações locais — NUNCA enviar para o GitHub
+.env
+.env.*
+!.env.example
+
+# Build do frontend (gerado pelo Render/npm run build)
+frontend/dist/
+
+# Banco SQLite antigo (o projeto agora usa o Neon)
+backend/data/
+
+# Sistema / editores
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log
