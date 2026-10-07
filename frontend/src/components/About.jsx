@@ -19,6 +19,9 @@ const STEPS = [
 /**
  * Apresentação do aplicativo (tela de primeiro acesso, "/sobre" e boas-vindas após o cadastro).
  * greeting: título personalizado (boas-vindas); onBack: mostra a seta de voltar.
+ *
+ * Celular: logo, foto, texto, botão e "Como funciona" empilhados.
+ * Telas grandes: barra no topo, destaque com foto e texto lado a lado e "Como funciona" em 3 cartões.
  */
 export default function About({ greeting, onStart, onBack, startLabel = 'Começar agora' }) {
   return (
@@ -28,9 +31,10 @@ export default function About({ greeting, onStart, onBack, startLabel = 'Começa
           <button className="icon-btn about__back" aria-label="Voltar" title="Voltar" onClick={onBack}><IconArrowLeft /></button>
         )}
         <Logo size="xl" />
+        <Button className="about__top-btn" onClick={onStart} title="Começar a usar o DesospIdoso">{startLabel}</Button>
       </header>
 
-      <div className="about__body">
+      <section className="about__hero">
         <figure className="about__media">
           <img
             src="/img/home.jpg"
@@ -40,7 +44,7 @@ export default function About({ greeting, onStart, onBack, startLabel = 'Começa
           />
         </figure>
 
-        <div className="about__content">
+        <div className="about__intro">
           <p className="about__eyebrow">Hospital e Maternidade Dra. Zilda Arns Neumann</p>
           <h1 className="about__title">{greeting || 'Cuidado que continua depois da alta'}</h1>
           <p className="about__lead">
@@ -48,24 +52,25 @@ export default function About({ greeting, onStart, onBack, startLabel = 'Começa
             precisar de acolhimento em uma instituição de longa permanência, pública ou conveniada, após a alta
             hospitalar.
           </p>
-
-          <h2 className="about__subtitle">Como funciona</h2>
-          <ol className="about__steps">
-            {STEPS.map((s, i) => (
-              <li key={s.title}>
-                <span className="about__num" aria-hidden="true">{i + 1}</span>
-                <div>
-                  <strong>{s.title}</strong>
-                  <p>{s.text}</p>
-                </div>
-              </li>
-            ))}
-          </ol>
-
           <p className="about__cta">Comece agora e contribua para um atendimento mais rápido, humanizado e eficiente.</p>
           <Button onClick={onStart} title="Começar a usar o DesospIdoso">{startLabel}</Button>
         </div>
-      </div>
+      </section>
+
+      <section className="about__how" aria-labelledby="como-funciona">
+        <h2 id="como-funciona" className="about__subtitle">Como funciona</h2>
+        <ol className="about__steps">
+          {STEPS.map((s, i) => (
+            <li key={s.title}>
+              <span className="about__num" aria-hidden="true">{i + 1}</span>
+              <div>
+                <strong>{s.title}</strong>
+                <p>{s.text}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </section>
     </Screen>
   );
 }
