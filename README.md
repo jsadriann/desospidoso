@@ -1,174 +1,187 @@
 # DesospIdoso
 
-Aplicação para identificar precocemente o perfil de pacientes idosos internados que, após a alta, precisarão de
-acolhimento em instituição de longa permanência — apoiando a **desospitalização**.
+Aplicação web para apoiar a desospitalização de pacientes idosos internados no Hospital e Maternidade Dra. Zilda
+Arns Neumann. A equipe multiprofissional registra, ainda durante a internação, as informações de cada paciente, e o
+sistema reúne tudo em uma ficha que ajuda a definir o acolhimento mais adequado após a alta.
+
+## Tecnologias
+
+- Frontend: React, Vite e React Router
+- Backend: Node.js e Express
+- Banco de dados: PostgreSQL (Neon)
+- Autenticação: JWT
+- PDF da ficha: pdf-lib
+
+## Estrutura
 
 ```
 desospIdoso/
-├── backend/    API REST (Node.js + Express + PostgreSQL no Neon)
-├── frontend/   App React (Vite + React Router), mobile-first
-└── telas/      Protótipos (SVG) que serviram de base
+├── backend/          API (Express + PostgreSQL)
+│   └── src/
+│       ├── routes/   rotas da API
+│       ├── forms.js  questionários de cada função
+│       ├── db.js     conexão e criação das tabelas
+│       └── seed.js   dados de exemplo
+├── frontend/         aplicação React
+│   ├── public/       imagens e logo
+│   └── src/
+│       ├── pages/    telas
+│       └── components/
+├── package.json      scripts de build e start (usados no deploy)
+└── render.yaml       configuração do Render
 ```
 
-## Requisitos
+## Como rodar localmente
 
-- **Node.js 18.18 ou superior** (recomendado: Node 22 LTS ou 24 LTS).
-- Um banco **PostgreSQL no [Neon](https://neon.tech)** (o plano gratuito atende). As tabelas são criadas
-  automaticamente na primeira vez que o backend inicia.
+Requisitos: Node.js 18 ou superior e um banco PostgreSQL (o projeto usa o Neon).
 
-## Como rodar (desenvolvimento)
-
-Em dois terminais:
+1. Configure o backend:
 
 ```bash
-# 1) API
 cd backend
-cp .env.example .env        # cole a DATABASE_URL do Neon e defina JWT_SECRET
-npm install
-npm run seed                # opcional: cria usuários e pacientes de exemplo no Neon
-npm run dev                 # http://localhost:3333
+cp .env.example .env
 ```
 
+Preencha o `.env`:
+
+| Variável | Descrição |
+|---|---|
+| `DATABASE_URL` | String de conexão do Neon (painel do Neon, botão Connect) |
+| `JWT_SECRET` | Texto longo e aleatório usado para assinar os logins |
+| `PORT` | Porta da API (padrão 3333) |
+| `FRONTEND_URL` | Endereço do frontend em desenvolvimento (padrão http://localhost:5173) |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` | Envio do código de recuperação de senha. Se ficarem vazios, o código aparece no terminal do backend |
+
+2. Instale as dependências e inicie a API:
+
 ```bash
-# 2) Frontend
+npm install
+npm run seed   # opcional, cria usuários e pacientes de exemplo
+npm run dev
+```
+
+As tabelas são criadas automaticamente na primeira execução.
+
+3. Em outro terminal, inicie o frontend:
+
+```bash
 cd frontend
 npm install
-npm run dev                 # http://localhost:5173
+npm run dev
 ```
 
-Com o seed, entre com **annadasilva@yahoo.com / Senha@123** (função Médico). Há um usuário de exemplo para cada
-função (veja `backend/src/seed.js`), todos com a senha `Senha@123`.
+O sistema fica disponível em http://localhost:5173.
 
-> **Neon:** a `DATABASE_URL` fica em Painel do Neon > seu projeto > **Connect** (prefira a conexão com
-> *pooling*). Ao iniciar, o backend mostra `Banco conectado: ep-....neon.tech`. Para checar a conexão a qualquer
-> momento, abra `http://localhost:3333/api/health` (deve responder `"database": "ok"`).
+Com os dados de exemplo, é possível entrar com `annadasilva@yahoo.com` e senha `Senha@123` (função Médico). Existe
+um usuário de exemplo para cada função, todos com a mesma senha (lista em `backend/src/seed.js`).
 
-> **Esqueci minha senha:** sem SMTP configurado no `.env`, o código de 6 dígitos aparece no terminal do backend.
+## Como o sistema funciona
 
-## Telas implementadas
+### Acesso
 
-| Tela (protótipo) | Rota |
-|---|---|
-| Página inicial (primeiro acesso — só na primeira visita; depois `/` abre o login) | `/` e `/sobre` |
-| Login (com mensagens de erro) | `/login` |
-| Cadastro + boas-vindas | `/cadastro`, `/boas-vindas` |
-| Esqueci minha senha (e-mail → código → nova senha → sucesso) | `/esqueci-senha` |
-| Pacientes (Todos / Recentes / Lixeira, busca, + Novo) | `/pacientes` |
-| Ajuda | `/pacientes/ajuda` |
-| Etapa 1 – Selecionar identificação | `/pacientes/novo` |
-| Etapa 1 – Adicionar nova identificação | `/pacientes/novo/identificacao` |
-| Etapa 2 – Dados específicos por função | `/pacientes/:id/preencher` |
-| Detalhes do paciente (excluir / restaurar / editar) | `/pacientes/:id` |
-| Editar identificação | `/pacientes/:id/identificacao` |
-| Fichas completas + detalhes + Download em PDF | `/fichas`, `/fichas/:id` |
-| Perfil, Dados pessoais (ver/editar, foto), Sair, Deletar conta | `/perfil`, `/perfil/dados`, `/perfil/dados/editar` |
+Na primeira visita é exibida uma tela de apresentação. Depois disso, o sistema abre direto no login. A apresentação
+continua acessível pelo link "Conheça o DesospIdoso".
 
-## Layout responsivo
+No cadastro, o profissional informa nome, e-mail, senha e sua função:
 
-O CSS é *mobile first* (a base são os protótipos de celular) e se adapta em `frontend/src/styles.css`:
+- Assistente social
+- Enfermeiro
+- Fisioterapeuta
+- Médico
+- Nutricionista
+- Psicólogo / Psiquiatra
+- Terapeuta ocupacional
 
-| Largura | Comportamento |
-|---|---|
-| até 360px | celulares pequenos: margens e componentes mais compactos |
-| até 599px | celular: barra de navegação inferior e botão "+" flutuante (igual aos protótipos) |
-| 600–1023px | tablet: conteúdo centralizado com largura máxima, cartões em 2 colunas, opções em grade; login, cadastro e senha viram um cartão centralizado |
-| a partir de 900px | página inicial e boas-vindas em duas colunas (foto + conteúdo) |
-| a partir de 1024px | desktop: menu lateral fixo (com "Novo paciente" e usuário logado), lista em 3+ colunas, formulários e detalhes em painel central |
+A senha precisa ter no mínimo 8 caracteres, incluindo um caractere especial. Quem esquecer a senha recebe um código de
+6 dígitos por e-mail, válido por 15 minutos.
 
-## Regras de negócio (tiradas das telas)
+### Arquivo do paciente
 
-- **Arquivo do paciente** = identificação + 7 seções, uma por função: Assistente social, Enfermeiro, Fisioterapeuta,
-  Médico, Nutricionista, Psicólogo/Psiquiatra e Terapeuta ocupacional.
-- A **identificação** é criada uma vez e reutilizada por todos os profissionais.
-- Cada profissional **só preenche/edita a seção da sua função** (validado no backend).
-- **Status** (do ponto de vista de quem está logado): *Pendente para você* (sua seção falta), *Pendente* (sua seção
-  está feita, faltam outras), *Concluído* (todas as 7).
-- **Recentes** = criados nos últimos 3 dias.
-- **Lixeira**: exclusão é reversível; após **30 dias** o arquivo é apagado definitivamente (verificado a cada hora).
-  Itens na lixeira não aparecem em Fichas completas e não podem ser editados.
-- **Última alteração** no cartão: Criado/Atualizado/Restaurado/Excluído + hoje/ontem/anteontem ou "dia dd/mm/aaaa".
-- **Fichas completas** = arquivos com as 7 seções preenchidas; podem ser baixados em PDF.
-- **Senha**: mínimo 8 caracteres e ao menos um caractere especial.
+Cada paciente tem um arquivo formado por duas partes:
 
-Os questionários de cada função ficam em **`backend/src/forms.js`** (fonte única). O frontend busca em `GET /api/forms`
-e monta os formulários dinamicamente — para mudar uma pergunta, altere só esse arquivo.
+1. Identificação: nome, data de nascimento, hospital, enfermaria, leito e eixo de internação (clínica médica,
+   cirúrgico ou UTI). É criada uma única vez e fica disponível para toda a equipe.
+2. Dados específicos por função: uma seção para cada uma das 7 funções. Cada profissional preenche e edita apenas a
+   seção da sua função.
+
+Para criar um arquivo, o profissional clica em "Novo paciente", escolhe uma identificação já cadastrada (ou cria uma
+nova) e preenche o questionário da sua função.
+
+### Lista de pacientes
+
+Cada cartão mostra o nome, o ID, o status, o progresso (por exemplo, "3 de 7 seções concluídas") e a última
+alteração (criado, atualizado, restaurado ou excluído, com "hoje", "ontem", "anteontem" ou a data).
+
+Os status são:
+
+- Pendente para você: a seção da sua função ainda não foi preenchida.
+- Pendente: a sua seção já foi preenchida, mas faltam seções de outras funções.
+- Concluído: todas as 7 seções foram preenchidas.
+
+As abas filtram a lista:
+
+- Todos
+- Recentes: pacientes criados nos últimos 3 dias.
+- Lixeira: arquivos excluídos. Eles podem ser restaurados em até 30 dias e, depois disso, são apagados
+  definitivamente.
+
+### Fichas completas
+
+Quando as 7 seções de um arquivo são preenchidas, ele passa a aparecer em "Fichas completas". Ali é possível ver
+todas as respostas e baixar a ficha em PDF.
+
+### Perfil
+
+O profissional pode ver e editar nome, e-mail, senha, função e foto, sair da conta ou excluir a conta.
+
+### Questionários
+
+As perguntas de cada função ficam em `backend/src/forms.js`. O frontend monta os formulários a partir desse arquivo,
+então para mudar uma pergunta ou opção basta editá-lo.
 
 ## API
 
-Todas as rotas (exceto `/auth/*`, `/forms` e `/health`) exigem `Authorization: Bearer <token>`.
+As rotas, exceto `/api/auth/*`, `/api/forms` e `/api/health`, exigem o cabeçalho `Authorization: Bearer <token>`.
 
 | Método | Rota | Descrição |
 |---|---|---|
-| POST | `/api/auth/register` | Cadastro `{ name, email, password, confirmPassword, role }` |
-| POST | `/api/auth/login` | Login `{ email, password }` → `{ token, user }` |
-| POST | `/api/auth/forgot-password` | Envia código `{ email }` |
-| POST | `/api/auth/verify-code` | Valida código `{ email, code }` → `{ resetToken }` |
-| POST | `/api/auth/reset-password` | Nova senha `{ resetToken, password, confirmPassword }` |
-| GET / PUT / DELETE | `/api/me` | Ver, editar (inclui foto em data URL) e deletar a conta |
+| POST | `/api/auth/register` | Cadastro |
+| POST | `/api/auth/login` | Login |
+| POST | `/api/auth/forgot-password` | Envia o código de recuperação |
+| POST | `/api/auth/verify-code` | Valida o código |
+| POST | `/api/auth/reset-password` | Define a nova senha |
+| GET, PUT, DELETE | `/api/me` | Ver, editar e excluir a própria conta |
 | GET | `/api/forms` | Funções, eixos de internação e questionários |
-| GET | `/api/patients?filter=todos\|recentes\|lixeira\|selecionaveis&q=` | Lista com status e progresso |
-| POST | `/api/patients` | Nova identificação |
-| GET / PUT | `/api/patients/:id` | Detalhes completos / editar identificação |
-| PUT | `/api/patients/:id/sections/:role` | Salvar a seção da sua função `{ answers }` |
-| DELETE | `/api/patients/:id` | Mover para a lixeira |
-| POST | `/api/patients/:id/restore` | Restaurar da lixeira |
+| GET | `/api/patients` | Lista de pacientes (`filter`: todos, recentes, lixeira; `q`: busca por nome ou ID) |
+| POST | `/api/patients` | Cria uma identificação |
+| GET, PUT | `/api/patients/:id` | Detalhes do arquivo / edita a identificação |
+| PUT | `/api/patients/:id/sections/:role` | Salva a seção da função do usuário |
+| DELETE | `/api/patients/:id` | Move para a lixeira |
+| POST | `/api/patients/:id/restore` | Restaura da lixeira |
 | GET | `/api/patients/:id/pdf` | PDF da ficha |
-| GET | `/api/records?q=` | Fichas completas |
+| GET | `/api/records` | Fichas completas |
+| GET | `/api/health` | Verifica a API e a conexão com o banco |
 
-## Decisões e pontos para validar com a equipe
+## Deploy
 
-- **7 seções no progresso.** Alguns protótipos mostram "3 de 8" e 8 círculos, mas existem 7 funções e a Ajuda diz que a
-  identificação não conta no progresso — por isso usei 7.
-- **Psicólogo – acompanhamento:** adicionei a opção "Não." além das duas do protótipo, para cobrir paciente sem
-  acompanhamento e sem necessidade de rede especializada.
-- **Enfermeiro – comorbidades:** o protótipo repete "Problemas cardíacos" na última opção; usei "Outras" com campo de texto.
-- **Banco:** PostgreSQL no Neon, via driver `pg`. O esquema (tabelas e índices) está em `backend/src/db.js`
-  (`migrate()`), executado a cada inicialização com `CREATE TABLE IF NOT EXISTS`. Respostas dos questionários
-  ficam em uma coluna `JSONB`.
-- **Foto de perfil:** é reduzida no navegador (320 px) e salva no banco como data URL — simples e sem servidor de
-  arquivos.
+Em produção, o backend serve a API em `/api` e também as telas do React, então o sistema roda como um único serviço.
 
-## Publicar (GitHub + Render + Neon)
-
-O projeto está pronto para rodar como **um único serviço**: o backend entrega a API em `/api` e também as telas
-do React (geradas em `frontend/dist`). Um endereço só, sem configurar CORS.
-
-**1. Atualize as dependências na sua máquina** (gera os `package-lock.json` com o driver `pg`):
+Na raiz do projeto:
 
 ```bash
-cd backend && npm install && cd ../frontend && npm install && cd ..
+npm run build   # instala as dependências e gera o frontend
+npm start       # inicia o servidor
 ```
 
-**2. Envie para o GitHub** (o `.gitignore` da raiz já impede o envio de `.env`, `node_modules` e `dist`):
+### Render
 
-```bash
-git init
-git add .
-git commit -m "DesospIdoso: frontend React + API Node + PostgreSQL (Neon)"
-git branch -M main
-git remote add origin https://github.com/SEU-USUARIO/desospidoso.git
-git push -u origin main
-```
+1. Envie o projeto para um repositório no GitHub.
+2. No Render, crie um Blueprint (New > Blueprint) apontando para o repositório. O arquivo `render.yaml` já tem a
+   configuração do serviço.
+3. Informe a variável `DATABASE_URL` com a string de conexão do Neon. O `JWT_SECRET` é gerado pelo próprio Render.
 
-Antes do `git commit`, confira com `git status` que nenhum `.env` aparece na lista.
+Cada push na branch `main` gera um novo deploy. Para conferir se o banco está conectado, acesse `/api/health` no
+endereço do serviço.
 
-**3. Crie o serviço no Render** — duas opções:
-
-- **Automática (Blueprint):** em *New > Blueprint*, escolha o repositório. O Render lê o `render.yaml` e cria o
-  serviço; ele só vai pedir a `DATABASE_URL` (cole a string do Neon). O `JWT_SECRET` é gerado sozinho.
-- **Manual:** *New > Web Service* → repositório → **Build Command** `npm run build` → **Start Command** `npm start`
-  → plano **Free** → em *Environment* adicione `DATABASE_URL` e `JWT_SECRET` (e `SMTP_*`, se quiser e-mail real).
-
-Quando o deploy terminar, abra o endereço `https://SEU-SERVICO.onrender.com`. Para conferir o banco:
-`https://SEU-SERVICO.onrender.com/api/health` deve responder `"database": "ok"`.
-
-> No plano gratuito do Render o serviço "dorme" após 15 minutos sem acesso; o primeiro acesso depois disso leva
-> cerca de 1 minuto. Os dados não são afetados (ficam no Neon).
-
-Cada `git push` na branch `main` publica uma nova versão automaticamente.
-
-## Outras formas de hospedar
-
-- **Um serviço (recomendado):** na raiz, `npm run build` e depois `npm start` — veja "Publicar" acima.
-- **Separado (opcional):** publique `frontend/dist` em um host estático (ex.: Vercel) com
-  `VITE_API_URL=https://sua-api` no build, e informe o endereço do site em `FRONTEND_URL` no backend (CORS).
+No plano gratuito do Render, o serviço é suspenso após 15 minutos sem acesso, e o primeiro acesso seguinte demora
+cerca de um minuto.
