@@ -74,6 +74,8 @@ export async function migrate() {
       updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
     );
     CREATE UNIQUE INDEX IF NOT EXISTS users_email_unique ON users (lower(email));
+    -- Preferências do usuário (Perfil > Preferências). Coluna adicionada depois: ALTER para bancos já existentes.
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS theme TEXT NOT NULL DEFAULT 'light';
 
     CREATE TABLE IF NOT EXISTS password_resets (
       id          SERIAL PRIMARY KEY,
@@ -120,6 +122,39 @@ export async function migrate() {
 
     CREATE INDEX IF NOT EXISTS patients_deleted_idx ON patients (deleted_at);
     CREATE INDEX IF NOT EXISTS sections_patient_idx ON sections (patient_id);
+
+    -- Foto de perfil: o arquivo fica no Object Storage do Neon; aqui fica a referência.
+    -- ON DELETE CASCADE: excluir a conta apaga esta linha junto.
+    CREATE TABLE IF NOT EXISTS user_avatars (
+      user_id       INTEGER     PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+      object_key    TEXT        NOT NULL UNIQUE,
+      content_type  TEXT        NOT NULL,
+      size_bytes    INTEGER     NOT NULL,
+      created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
+
+    -- Arquivos que saíram do banco e ainda precisam ser apagados do bucket.
+    CREATE TABLE IF NOT EXISTS storage_deletions (
+      object_key  TEXT        PRIMARY KEY,
+      queued_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+      attempts    INTEGER     NOT NULL DEFAULT 0
+    );
+
+    -- Sempre que uma foto sai do banco (conta excluída em cascata, foto trocada ou removida),
+    -- a chave do arquivo entra na fila acima. A API apaga o arquivo do bucket em seguida.
+    CREATE OR REPLACE FUNCTION queue_avatar_file_deletion() RETURNS trigger AS $fn$
+    BEGIN
+      IF TG_OP = 'DELETE' OR NEW.object_key IS DISTINCT FROM OLD.object_key THEN
+        INSERT INTO storage_deletions (object_key) VALUES (OLD.object_key) ON CONFLICT DO NOTHING;
+      END IF;
+      RETURN NULL;
+    END
+    $fn$ LANGUAGE plpgsql;
+
+    DROP TRIGGER IF EXISTS user_avatars_file_cleanup ON user_avatars;
+    CREATE TRIGGER user_avatars_file_cleanup
+      AFTER DELETE OR UPDATE OF object_key ON user_avatars
+      FOR EACH ROW EXECUTE FUNCTION queue_avatar_file_deletion();
   `);
 }
 

@@ -40,9 +40,25 @@ export function verifyResetToken(token) {
   return payload.rid;
 }
 
+// Usuário + chave da foto de perfil (tabela user_avatars).
+const USER_SQL = `SELECT u.*, a.object_key AS avatar_key
+                    FROM users u LEFT JOIN user_avatars a ON a.user_id = u.id`;
+export const findUserById = (id) => one(`${USER_SQL} WHERE u.id = $1`, [id]);
+export const findUserByEmail = (email) => one(`${USER_SQL} WHERE lower(u.email) = lower($1)`, [String(email).trim()]);
+
+/** Endereço público da foto: /api/avatars/<uuid>.jpg (nome novo a cada envio, então pode ficar em cache). */
+function avatarUrl(u) {
+  if (u.avatar_key) return `/api/${u.avatar_key}`;
+  if (u.avatar?.startsWith('data:image/')) return u.avatar; // foto antiga, antes do Object Storage
+  return null;
+}
+
 export function publicUser(u) {
   if (!u) return null;
-  return { id: u.id, name: u.name, email: u.email, role: u.role, avatar: u.avatar, createdAt: u.created_at };
+  return {
+    id: u.id, name: u.name, email: u.email, role: u.role, avatar: avatarUrl(u), createdAt: u.created_at,
+    preferences: { theme: u.theme || 'light' },
+  };
 }
 
 /** Middleware: exige "Authorization: Bearer <token>". Coloca o usuário em req.user. */
@@ -58,7 +74,7 @@ export async function requireAuth(req, res, next) {
     return res.status(401).json({ error: 'Sessão expirada. Faça login novamente.' });
   }
   try {
-    const user = await one('SELECT * FROM users WHERE id = $1', [Number(payload.sub)]);
+    const user = await findUserById(Number(payload.sub));
     if (!user) return res.status(401).json({ error: 'Sessão expirada. Faça login novamente.' });
     req.user = user;
     return next();

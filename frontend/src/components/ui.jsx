@@ -1,9 +1,10 @@
 import { useEffect, useId, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext.jsx';
+import { apiUrl } from '../api.js';
 import {
   IconAlert, IconArrowLeft, IconCheckCircle, IconClipboard, IconClose, IconEye, IconEyeOff, IconFile, IconInfo,
-  IconPlus, IconSearch, IconUser,
+  IconChevronLeft, IconChevronRight, IconPlus, IconSearch, IconUser,
 } from './Icons.jsx';
 
 /** Extrai o texto de um conteúdo React (usado como dica padrão ao passar o mouse). */
@@ -20,8 +21,12 @@ export function textOf(node) {
 }
 
 export function Logo({ size = 'lg' }) {
+  // Duas versões: a CSS mostra a escura no tema claro e a clara no tema escuro.
   return (
-    <img className={`logo logo--${size}`} src="/logo.svg" alt="DesospIdoso" />
+    <>
+      <img className={`logo logo--${size} logo--on-light`} src="/logo.svg" alt="DesospIdoso" />
+      <img className={`logo logo--${size} logo--on-dark`} src="/logo-dark.svg" alt="DesospIdoso" />
+    </>
   );
 }
 
@@ -44,28 +49,58 @@ const NAV_ITEMS = [
   { to: '/perfil', label: 'Perfil', icon: <IconUser />, hint: 'Ver e editar seus dados e sua conta' },
 ];
 
-/** Menu lateral (tablet na horizontal e desktop). No celular fica oculto e entra a BottomNav. */
-export function SideNav() {
+/**
+ * Menu lateral (telas a partir de 1024px). No celular fica oculto e entra a BottomNav.
+ * collapsed: mostra só os ícones (o nome aparece ao passar o mouse).
+ */
+export function SideNav({ collapsed = false, onToggle }) {
   const { user } = useApp();
   const navigate = useNavigate();
+  const toggleLabel = collapsed ? 'Expandir menu' : 'Mostrar só os ícones';
   return (
-    <aside className="side-nav" aria-label="Menu">
-      <div className="side-nav__logo"><Logo size="md" /></div>
-      <button className="btn btn--primary side-nav__new" title="Criar um novo arquivo de paciente" onClick={() => navigate('/pacientes/novo')}>
-        <IconPlus size={20} /> Novo paciente
+    <aside className={`side-nav ${collapsed ? 'side-nav--collapsed' : ''}`} aria-label="Menu">
+      {/* Seta redonda presa na divisória entre o menu e o conteúdo */}
+      <button
+        type="button"
+        className="side-nav__toggle"
+        aria-label={toggleLabel}
+        aria-expanded={!collapsed}
+        title={toggleLabel}
+        onClick={onToggle}
+      >
+        {collapsed ? <IconChevronRight size={16} strokeWidth={2.5} /> : <IconChevronLeft size={16} strokeWidth={2.5} />}
+      </button>
+      <div className="side-nav__top">
+        {collapsed
+          ? <img className="side-nav__mark" src="/favicon.svg" alt="DesospIdoso" width="36" height="36" />
+          : <div className="side-nav__logo"><Logo size="md" /></div>}
+      </div>
+      <button
+        className="btn btn--primary side-nav__new"
+        title="Criar um novo arquivo de paciente"
+        aria-label="Novo paciente"
+        onClick={() => navigate('/pacientes/novo')}
+      >
+        <IconPlus size={20} /> <span className="side-nav__label">Novo paciente</span>
       </button>
       <nav className="side-nav__links">
         {NAV_ITEMS.map((i) => (
-          <NavLink key={i.to} to={i.to} title={i.hint} className={({ isActive }) => `side-nav__item ${isActive ? 'is-active' : ''}`}>
+          <NavLink
+            key={i.to}
+            to={i.to}
+            title={collapsed ? i.label : i.hint}
+            aria-label={i.label}
+            className={({ isActive }) => `side-nav__item ${isActive ? 'is-active' : ''}`}
+          >
             {i.icon}
-            <span>{i.label}</span>
+            <span className="side-nav__label">{i.label}</span>
           </NavLink>
         ))}
       </nav>
       {user && (
-        <NavLink to="/perfil" className="side-nav__user" title="Abrir o seu perfil">
+        <NavLink to="/perfil" className="side-nav__user" title={collapsed ? `${user.name} (abrir perfil)` : 'Abrir o seu perfil'}>
           <Avatar src={user.avatar} size={40} />
-          <span>
+          <span className="side-nav__label">
             <strong>{user.name}</strong>
             <small>{user.email}</small>
           </span>
@@ -321,10 +356,10 @@ export function BottomNav() {
   );
 }
 
-export function Avatar({ src, size = 96, children }) {
+export function Avatar({ src, size = 96, busy = false, children }) {
   return (
-    <div className="avatar" style={{ width: size, height: size }}>
-      {src ? <img src={src} alt="Foto de perfil" /> : <IconUser size={size * 0.45} strokeWidth={1.6} />}
+    <div className={`avatar ${busy ? 'avatar--busy' : ''}`} style={{ width: size, height: size }}>
+      {src ? <img src={apiUrl(src)} alt="Foto de perfil" /> : <IconUser size={size * 0.45} strokeWidth={1.6} />}
       {children}
     </div>
   );

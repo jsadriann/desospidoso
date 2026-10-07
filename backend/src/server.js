@@ -2,6 +2,7 @@ import { app } from './app.js';
 import { config } from './config.js';
 import { migrate, pool } from './db.js';
 import { purgeTrash } from './patients.js';
+import { ensureBucket, migrateLegacyAvatars, purgeDeletedFiles } from './storage.js';
 
 async function start() {
   try {
@@ -15,8 +16,21 @@ async function start() {
   const { host } = new URL(config.databaseUrl);
   console.log(`Banco conectado: ${host}`);
 
+  // Object Storage (fotos de perfil). Se falhar, a API sobe mesmo assim; só as fotos ficam indisponíveis.
+  try {
+    await ensureBucket();
+    await migrateLegacyAvatars();
+    await purgeDeletedFiles();
+  } catch (err) {
+    console.error('[fotos] Object Storage indisponível:', err.message);
+  }
+
+  const hourly = () => {
+    purgeTrash().catch((e) => console.error('[lixeira]', e.message));
+    purgeDeletedFiles().catch((e) => console.error('[fotos]', e.message));
+  };
   await purgeTrash().catch((e) => console.error('[lixeira]', e.message));
-  setInterval(() => purgeTrash().catch((e) => console.error('[lixeira]', e.message)), 60 * 60 * 1000);
+  setInterval(hourly, 60 * 60 * 1000);
 
   const server = app.listen(config.port, () => {
     console.log(`API DesospIdoso rodando em http://localhost:${config.port}`);

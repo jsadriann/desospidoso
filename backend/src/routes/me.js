@@ -1,21 +1,21 @@
 import { Router } from 'express';
-import { ah, one } from '../db.js';
+import { ah, one, transaction } from '../db.js';
 import { ROLES } from '../forms.js';
-import { hashPassword, passwordProblem, publicUser, requireAuth } from '../auth.js';
+import { findUserById, hashPassword, passwordProblem, publicUser, requireAuth } from '../auth.js';
+import { deleteObject, parseImage, purgeSoon, uploadAvatar } from '../storage.js';
 
 const router = Router();
 router.use(requireAuth);
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
 
 // GET /api/me
 router.get('/', (req, res) => res.json({ user: publicUser(req.user) }));
 
-// PUT /api/me  { name, email, role, password?, confirmPassword?, avatar? }
-// avatar: data URL (data:image/...;base64,...) ou null para remover
+// PUT /api/me  { name, email, role, password?, confirmPassword? }
+// (a foto tem rotas próprias: PUT/DELETE /api/me/avatar)
 router.put('/', ah(async (req, res) => {
-  const { name, email, role, password, confirmPassword, avatar } = req.body || {};
+  const { name, email, role, password, confirmPassword } = req.body || {};
   if (!name?.trim() || !email?.trim() || !role) {
     return res.status(400).json({ error: 'Por favor, preencha todos os campos antes de continuar.' });
   }
@@ -35,28 +35,62 @@ router.put('/', ah(async (req, res) => {
     passwordHash = hashPassword(password);
   }
 
-  let newAvatar = req.user.avatar;
-  if (avatar === null) newAvatar = null;
-  else if (typeof avatar === 'string' && avatar !== req.user.avatar) {
-    if (!/^data:image\/(png|jpe?g|webp);base64,/.test(avatar)) {
-      return res.status(400).json({ error: 'Formato de imagem inválido. Use PNG, JPG ou WEBP.' });
-    }
-    if (avatar.length * 0.75 > MAX_AVATAR_BYTES) return res.status(400).json({ error: 'A imagem deve ter no máximo 2 MB.' });
-    newAvatar = avatar;
-  }
-
-  const user = await one(
-    `UPDATE users SET name = $1, email = $2, role = $3, password_hash = $4, avatar = $5, updated_at = now()
-      WHERE id = $6 RETURNING *`,
-    [name.trim(), email.trim().toLowerCase(), role, passwordHash, newAvatar, req.user.id],
+  await one(
+    `UPDATE users SET name = $1, email = $2, role = $3, password_hash = $4, updated_at = now()
+      WHERE id = $5`,
+    [name.trim(), email.trim().toLowerCase(), role, passwordHash, req.user.id],
   );
-  res.json({ user: publicUser(user) });
+  res.json({ user: publicUser(await findUserById(req.user.id)) });
+}));
+
+// PUT /api/me/avatar  { image: "data:image/jpeg;base64,..." }  -> envia ou troca a foto de perfil
+// O arquivo vai para o Object Storage do Neon; a foto anterior é apagada do bucket.
+router.put('/avatar', ah(async (req, res) => {
+  const image = parseImage(req.body?.image);
+  const key = await uploadAvatar(image);
+  try {
+    await transaction(async (tx) => {
+      await tx.one(
+        `INSERT INTO user_avatars (user_id, object_key, content_type, size_bytes) VALUES ($1, $2, $3, $4)
+         ON CONFLICT (user_id) DO UPDATE
+           SET object_key = EXCLUDED.object_key, content_type = EXCLUDED.content_type,
+               size_bytes = EXCLUDED.size_bytes, created_at = now()`,
+        [req.user.id, key, image.contentType, image.buffer.length],
+      );
+      await tx.one('UPDATE users SET avatar = NULL, updated_at = now() WHERE id = $1', [req.user.id]);
+    });
+  } catch (err) {
+    await deleteObject(key).catch(() => {}); // não deixa arquivo solto no bucket
+    throw err;
+  }
+  purgeSoon(); // apaga a foto anterior
+  res.json({ user: publicUser(await findUserById(req.user.id)) });
+}));
+
+// DELETE /api/me/avatar  -> remove a foto de perfil
+router.delete('/avatar', ah(async (req, res) => {
+  await one('DELETE FROM user_avatars WHERE user_id = $1', [req.user.id]);
+  await one('UPDATE users SET avatar = NULL, updated_at = now() WHERE id = $1', [req.user.id]);
+  purgeSoon();
+  res.json({ user: publicUser(await findUserById(req.user.id)) });
+}));
+
+// PUT /api/me/preferences  { theme: 'light' | 'dark' }  -> Perfil > Preferências
+const THEMES = ['light', 'dark'];
+router.put('/preferences', ah(async (req, res) => {
+  const { theme } = req.body || {};
+  if (!THEMES.includes(theme)) return res.status(400).json({ error: 'Tema inválido.' });
+  await one('UPDATE users SET theme = $1, updated_at = now() WHERE id = $2', [theme, req.user.id]);
+  res.json({ user: publicUser(await findUserById(req.user.id)) });
 }));
 
 // DELETE /api/me  -> "Deletar conta" (a ação não pode ser desfeita)
 // Os arquivos de paciente continuam existindo; o nome de quem preencheu fica registrado.
+// A foto de perfil sai junto: user_avatars tem ON DELETE CASCADE e o gatilho do banco
+// manda o arquivo para a fila de exclusão, que é processada logo em seguida.
 router.delete('/', ah(async (req, res) => {
   await one('DELETE FROM users WHERE id = $1', [req.user.id]);
+  purgeSoon();
   res.status(204).end();
 }));
 

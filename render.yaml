@@ -15,6 +15,17 @@ services:
         sync: false
       - key: JWT_SECRET # gerado automaticamente pelo Render
         generateValue: true
+      # Object Storage do Neon (fotos de perfil)
+      - key: AWS_ENDPOINT_URL_S3
+        sync: false
+      - key: AWS_ACCESS_KEY_ID
+        sync: false
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false
+      - key: AWS_REGION
+        sync: false
+      - key: AWS_S3_BUCKET
+        value: desospidoso
       - key: APP_TIMEZONE
         value: America/Fortaleza
       # Opcional: e-mail real para "Esqueci minha senha"

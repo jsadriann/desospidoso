@@ -44,7 +44,7 @@ export function createdLine(iso, by, verb = 'Criado') {
 }
 
 /** Converte um arquivo de imagem em data URL reduzida (para a foto de perfil). */
-export function resizeImage(file, size = 320) {
+export function resizeImage(file, size = 400) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onerror = reject;
@@ -58,7 +58,10 @@ export function resizeImage(file, size = 320) {
         const canvas = document.createElement('canvas');
         canvas.width = w;
         canvas.height = h;
-        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#fff'; // PNG com transparência vira JPG com fundo branco
+        ctx.fillRect(0, 0, w, h);
+        ctx.drawImage(img, 0, 0, w, h);
         resolve(canvas.toDataURL('image/jpeg', 0.85));
       };
       img.src = reader.result;

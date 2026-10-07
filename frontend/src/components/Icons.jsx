@@ -99,3 +99,22 @@ export const IconClipboard = (p) => (
 export const IconDash = (p) => (
   <Svg {...p}><path d="M5 12h14" /></Svg>
 );
+export const IconChevronLeft = (p) => (
+  <Svg {...p}><path d="M15 6l-6 6 6 6" /></Svg>
+);
+export const IconSettings = (p) => (
+  <Svg {...p}>
+    <path d="M4 7h10" /><path d="M18 7h2" /><circle cx="16" cy="7" r="2" />
+    <path d="M4 17h4" /><path d="M12 17h8" /><circle cx="10" cy="17" r="2" />
+  </Svg>
+);
+export const IconSun = (p) => (
+  <Svg {...p}>
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 2v2" /><path d="M12 20v2" /><path d="M4.9 4.9l1.4 1.4" /><path d="M17.7 17.7l1.4 1.4" />
+    <path d="M2 12h2" /><path d="M20 12h2" /><path d="M4.9 19.1l1.4-1.4" /><path d="M17.7 6.3l1.4-1.4" />
+  </Svg>
+);
+export const IconMoon = (p) => (
+  <Svg {...p}><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" /></Svg>
+);

@@ -21,7 +21,7 @@ const STEPS = [
  * greeting: título personalizado (boas-vindas); onBack: mostra a seta de voltar.
  *
  * Celular: logo, foto, texto, botão e "Como funciona" empilhados.
- * Telas grandes: barra no topo, destaque com foto e texto lado a lado e "Como funciona" em 3 cartões.
+ * Telas grandes: logo no topo, destaque com foto e texto lado a lado e "Como funciona" em 3 cartões.
  */
 export default function About({ greeting, onStart, onBack, startLabel = 'Começar agora' }) {
   return (
@@ -31,7 +31,6 @@ export default function About({ greeting, onStart, onBack, startLabel = 'Começa
           <button className="icon-btn about__back" aria-label="Voltar" title="Voltar" onClick={onBack}><IconArrowLeft /></button>
         )}
         <Logo size="xl" />
-        <Button className="about__top-btn" onClick={onStart} title="Começar a usar o DesospIdoso">{startLabel}</Button>
       </header>
 
       <section className="about__hero">

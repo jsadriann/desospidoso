@@ -9,6 +9,7 @@ sistema reúne tudo em uma ficha que ajuda a definir o acolhimento mais adequado
 - Frontend: React, Vite e React Router
 - Backend: Node.js e Express
 - Banco de dados: PostgreSQL (Neon)
+- Fotos de perfil: Object Storage do Neon (compatível com S3)
 - Autenticação: JWT
 - PDF da ficha: pdf-lib
 
@@ -50,6 +51,8 @@ Preencha o `.env`:
 | `JWT_SECRET` | Texto longo e aleatório usado para assinar os logins |
 | `PORT` | Porta da API (padrão 3333) |
 | `FRONTEND_URL` | Endereço do frontend em desenvolvimento (padrão http://localhost:5173) |
+| `AWS_ENDPOINT_URL_S3`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION` | Object Storage do Neon, onde ficam as fotos de perfil (painel do Neon > Object storage). Sem elas o resto funciona, só o envio de fotos fica desativado |
+| `AWS_S3_BUCKET` | Nome do bucket das fotos (padrão `desospidoso`). Se não existir, a API cria ao iniciar |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` | Envio do código de recuperação de senha. Se ficarem vazios, o código aparece no terminal do backend |
 
 2. Instale as dependências e inicie a API:
@@ -134,6 +137,14 @@ todas as respostas e baixar a ficha em PDF.
 
 O profissional pode ver e editar nome, e-mail, senha, função e foto, sair da conta ou excluir a conta.
 
+A foto é adicionada clicando nela no Perfil (ou em Dados pessoais > Editar). O navegador reduz a imagem antes de
+enviar, a API confere se é mesmo PNG, JPG ou WEBP e guarda o arquivo no Object Storage do Neon. No banco fica só a
+referência, na tabela `user_avatars`, ligada ao usuário com `ON DELETE CASCADE`. Quando a conta é excluída (ou a foto
+é trocada ou removida), um gatilho do banco coloca o arquivo na fila `storage_deletions` e a API o apaga do bucket.
+
+Em Perfil > Preferências dá para escolher entre o tema claro e o escuro. A escolha fica salva na conta (coluna
+`theme` da tabela `users`), então vale em qualquer navegador até o usuário trocar de novo.
+
 ### Questionários
 
 As perguntas de cada função ficam em `backend/src/forms.js`. O frontend monta os formulários a partir desse arquivo,
@@ -151,6 +162,9 @@ As rotas, exceto `/api/auth/*`, `/api/forms` e `/api/health`, exigem o cabeçalh
 | POST | `/api/auth/verify-code` | Valida o código |
 | POST | `/api/auth/reset-password` | Define a nova senha |
 | GET, PUT, DELETE | `/api/me` | Ver, editar e excluir a própria conta |
+| PUT, DELETE | `/api/me/avatar` | Envia (`image`: data URL) ou remove a foto de perfil |
+| GET | `/api/avatars/:arquivo` | Imagem da foto de perfil |
+| PUT | `/api/me/preferences` | Salva as preferências (`theme`: light ou dark) |
 | GET | `/api/forms` | Funções, eixos de internação e questionários |
 | GET | `/api/patients` | Lista de pacientes (`filter`: todos, recentes, lixeira; `q`: busca por nome ou ID) |
 | POST | `/api/patients` | Cria uma identificação |
@@ -178,7 +192,8 @@ npm start       # inicia o servidor
 1. Envie o projeto para um repositório no GitHub.
 2. No Render, crie um Blueprint (New > Blueprint) apontando para o repositório. O arquivo `render.yaml` já tem a
    configuração do serviço.
-3. Informe a variável `DATABASE_URL` com a string de conexão do Neon. O `JWT_SECRET` é gerado pelo próprio Render.
+3. Informe a variável `DATABASE_URL` com a string de conexão do Neon e as variáveis `AWS_*` do Object Storage. O
+   `JWT_SECRET` é gerado pelo próprio Render.
 
 Cada push na branch `main` gera um novo deploy. Para conferir se o banco está conectado, acesse `/api/health` no
 endereço do serviço.

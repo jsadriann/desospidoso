@@ -4,7 +4,8 @@ import { fileURLToPath } from 'node:url';
 import express from 'express';
 import cors from 'cors';
 import { config } from './config.js';
-import { ah, query } from './db.js';
+import { ah, one, query } from './db.js';
+import { StorageError, downloadObject } from './storage.js';
 import { FORMS, ROLES, AXES } from './forms.js';
 import authRoutes from './routes/auth.js';
 import meRoutes from './routes/me.js';
@@ -14,7 +15,7 @@ import recordRoutes from './routes/records.js';
 export const app = express();
 
 app.use(cors({ origin: config.frontendUrl.split(',').map((s) => s.trim()) }));
-app.use(express.json({ limit: '4mb' })); // foto de perfil vem como data URL
+app.use(express.json({ limit: '4mb' })); // foto de perfil chega como data URL (até 2 MB)
 
 // Verifica a API e a conexão com o banco (Neon)
 app.get('/api/health', ah(async (req, res) => {
@@ -24,6 +25,20 @@ app.get('/api/health', ah(async (req, res) => {
 
 // Funções, eixos e questionários (fonte única para o frontend)
 app.get('/api/forms', (req, res) => res.json({ roles: ROLES, axes: AXES, forms: FORMS }));
+
+// Foto de perfil, lida do Object Storage do Neon. O nome do arquivo é um UUID novo a cada
+// envio e só é servido enquanto estiver ligado a uma conta, por isso pode ficar em cache.
+app.get('/api/avatars/:file', ah(async (req, res) => {
+  const key = `avatars/${req.params.file}`;
+  const avatar = await one('SELECT content_type FROM user_avatars WHERE object_key = $1', [key]);
+  const body = avatar && await downloadObject(key);
+  if (!body) return res.status(404).json({ error: 'Foto não encontrada.' });
+  res.setHeader('Content-Type', avatar.content_type);
+  res.setHeader('Content-Length', body.length);
+  res.setHeader('Cache-Control', 'private, max-age=31536000, immutable');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.end(body);
+}));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/me', meRoutes);
@@ -51,6 +66,7 @@ if (fs.existsSync(path.join(FRONTEND_DIST, 'index.html'))) {
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   if (err?.type === 'entity.too.large') return res.status(413).json({ error: 'Arquivo muito grande.' });
+  if (err instanceof StorageError) return res.status(err.status).json({ error: err.message });
   // E-mail duplicado (índice único) em cadastros simultâneos
   if (err?.code === '23505' && String(err.constraint).includes('email')) {
     return res.status(409).json({ error: 'Este endereço de e-mail já está cadastrado. Utilize um diferente para prosseguir.' });

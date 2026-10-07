@@ -5,6 +5,7 @@ import { config } from '../config.js';
 import { ROLES } from '../forms.js';
 import {
   hashPassword, verifyPassword, passwordProblem, signToken, signResetToken, verifyResetToken, publicUser,
+  findUserByEmail,
 } from '../auth.js';
 import { sendResetCode } from '../mailer.js';
 
@@ -13,7 +14,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const FILL_ALL = 'Por favor, preencha todos os campos antes de continuar.';
 const EMAIL_TAKEN = 'Este endereço de e-mail já está cadastrado. Utilize um diferente para prosseguir.';
 
-const findByEmail = (email) => one('SELECT * FROM users WHERE lower(email) = lower($1)', [email.trim()]);
+const findByEmail = findUserByEmail;
 
 // POST /api/auth/register  { name, email, password, confirmPassword, role }
 router.post('/register', ah(async (req, res) => {

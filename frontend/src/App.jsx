@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom';
 import { useApp } from './context/AppContext.jsx';
 import { Loading, SideNav, Toast } from './components/ui.jsx';
@@ -17,6 +18,7 @@ import Records from './pages/Records.jsx';
 import RecordDetails from './pages/RecordDetails.jsx';
 import Profile from './pages/Profile.jsx';
 import PersonalData from './pages/PersonalData.jsx';
+import Preferences from './pages/Preferences.jsx';
 
 function RequireAuth() {
   const { user, loading } = useApp();
@@ -26,11 +28,20 @@ function RequireAuth() {
   return <Outlet />;
 }
 
-/** Área logada: menu lateral no desktop + conteúdo. */
+const SIDEBAR_KEY = 'desospidoso.sidebar';
+
+/** Área logada: menu lateral no desktop (expandido ou só ícones; a escolha fica salva) + conteúdo. */
 function Shell() {
+  const [collapsed, setCollapsed] = useState(() => {
+    try { return localStorage.getItem(SIDEBAR_KEY) === 'collapsed'; } catch { return false; }
+  });
+  const toggle = () => setCollapsed((c) => {
+    try { localStorage.setItem(SIDEBAR_KEY, c ? 'expanded' : 'collapsed'); } catch { /* sem armazenamento: só não lembra */ }
+    return !c;
+  });
   return (
-    <div className="shell">
-      <SideNav />
+    <div className={`shell ${collapsed ? 'shell--collapsed' : ''}`}>
+      <SideNav collapsed={collapsed} onToggle={toggle} />
       <div className="shell__main"><Outlet /></div>
     </div>
   );
@@ -70,6 +81,7 @@ export default function App() {
             <Route path="/perfil" element={<Profile />} />
             <Route path="/perfil/dados" element={<PersonalData />} />
             <Route path="/perfil/dados/editar" element={<PersonalData editing />} />
+            <Route path="/perfil/preferencias" element={<Preferences />} />
           </Route>
         </Route>
 

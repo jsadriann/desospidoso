@@ -6,6 +6,13 @@
     <meta name="theme-color" content="#246317" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <title>DesospIdoso</title>
+    <script>
+      // Aplica o tema salvo antes de desenhar a página (evita piscar no tema errado)
+      try {
+        var t = localStorage.getItem('desospidoso.theme');
+        if (t === 'dark' || t === 'light') document.documentElement.dataset.theme = t;
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

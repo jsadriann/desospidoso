@@ -37,8 +37,11 @@ export default function PersonalData({ editing = false }) {
 function EditPersonalData({ user, setUser, meta, notify, navigate }) {
   const fileRef = useRef();
   const [form, setForm] = useState({
-    name: user.name, email: user.email, password: '', confirmPassword: '', role: user.role, avatar: user.avatar,
+    name: user.name, email: user.email, password: '', confirmPassword: '', role: user.role,
   });
+  // Foto: só é enviada/removida ao salvar. undefined = sem mudança, null = remover, data URL = nova foto
+  const [photo, setPhoto] = useState(undefined);
+  const shownPhoto = photo === undefined ? user.avatar : photo;
   const [error, setError] = useState('');
   const [confirm, setConfirm] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -46,11 +49,10 @@ function EditPersonalData({ user, setUser, meta, notify, navigate }) {
 
   const pickPhoto = async (e) => {
     const file = e.target.files?.[0];
+    e.target.value = '';
     if (!file) return;
     try {
-      setForm((f) => ({ ...f, avatar: null }));
-      const avatar = await resizeImage(file);
-      setForm((f) => ({ ...f, avatar }));
+      setPhoto(await resizeImage(file));
     } catch {
       setError('Não foi possível carregar a imagem.');
     }
@@ -67,7 +69,9 @@ function EditPersonalData({ user, setUser, meta, notify, navigate }) {
   const save = async () => {
     setSaving(true);
     try {
-      const { user: u } = await api.updateMe(form);
+      let { user: u } = await api.updateMe(form);
+      if (photo) ({ user: u } = await api.uploadAvatar(photo));
+      else if (photo === null && user.avatar) ({ user: u } = await api.removeAvatar());
       setUser(u);
       notify('success');
       navigate('/perfil/dados', { replace: true });
@@ -83,10 +87,15 @@ function EditPersonalData({ user, setUser, meta, notify, navigate }) {
   return (
     <Screen narrow>
       <TopBar title="Dados pessoais" />
-      <div className="center-block">
+      <div className="center-block center-block--stack">
         <button type="button" className="avatar-btn" aria-label="Alterar foto de perfil" title="Alterar foto de perfil (PNG, JPG ou WEBP)" onClick={() => fileRef.current.click()}>
-          <Avatar src={form.avatar} size={100}><span className="avatar__badge"><IconCamera size={18} /></span></Avatar>
+          <Avatar src={shownPhoto} size={100}><span className="avatar__badge"><IconCamera size={18} /></span></Avatar>
         </button>
+        {shownPhoto && (
+          <button type="button" className="link-btn link-btn--danger" title="Remover a foto de perfil ao salvar" onClick={() => setPhoto(null)}>
+            Remover foto
+          </button>
+        )}
         <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp" hidden onChange={pickPhoto} />
       </div>
       <form id="personal-form" className="stack" onSubmit={ask} noValidate>

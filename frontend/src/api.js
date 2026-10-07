@@ -2,6 +2,9 @@
 const BASE = (import.meta.env?.VITE_API_URL || '') + '/api';
 const TOKEN_KEY = 'desospidoso.token';
 
+/** Endereço completo de um arquivo servido pela API (ex.: foto de perfil "/api/avatars/..."). */
+export const apiUrl = (path) => (path?.startsWith('/api/') ? (import.meta.env?.VITE_API_URL || '') + path : path);
+
 export const tokenStore = {
   get: () => localStorage.getItem(TOKEN_KEY),
   set: (t) => localStorage.setItem(TOKEN_KEY, t),
@@ -51,6 +54,9 @@ export const api = {
   // Conta
   me: () => request('GET', '/me'),
   updateMe: (payload) => request('PUT', '/me', payload),
+  updatePreferences: (prefs) => request('PUT', '/me/preferences', prefs),
+  uploadAvatar: (image) => request('PUT', '/me/avatar', { image }), // image: data URL
+  removeAvatar: () => request('DELETE', '/me/avatar'),
   deleteMe: () => request('DELETE', '/me'),
 
   // Questionários
