@@ -22,7 +22,7 @@ export default function Patients() {
   const patients = data?.patients || [];
 
   return (
-    <Screen withNav>
+    <Screen withNav className="screen--fab">
       <header className="page-head">
         <h1>Pacientes</h1>
         <Link to="/pacientes/ajuda" className="icon-btn" aria-label="Ajuda" title="Ajuda: como entender esta página"><IconHelp size={36} /></Link>

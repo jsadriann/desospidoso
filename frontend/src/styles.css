@@ -16,10 +16,17 @@
   --nav-height: 76px;
   --gutter: 24px;
   --side-width: 264px;
+  /* Altura da área visível. Em celulares, 100vh inclui a barra de endereço e gera scroll à toa;
+     100dvh acompanha a área realmente visível. */
+  --vh: 100vh;
   font-family: Verdana, Geneva, Tahoma, sans-serif;
   color: var(--text);
   background: var(--page);
   -webkit-font-smoothing: antialiased;
+}
+
+@supports (height: 100dvh) {
+  :root { --vh: 100dvh; }
 }
 
 * { box-sizing: border-box; }
@@ -34,17 +41,19 @@ legend { padding: 0; }
 
 /* ---------- Estrutura (app mobile centralizado) ---------- */
 /* Mobile first: a base é o celular (protótipos). Tablet e desktop estão no fim do arquivo. */
-.app { min-height: 100vh; background: var(--bg); }
+.app { min-height: var(--vh); background: var(--bg); }
 .screen {
   width: 100%;
   margin: 0 auto;
-  padding: 56px var(--gutter) 40px;
+  padding: 56px var(--gutter) 24px;
   display: flex;
   flex-direction: column;
   gap: 20px;
-  min-height: 100vh;
+  min-height: var(--vh);
 }
-.screen--nav { padding-bottom: calc(var(--nav-height) + 100px); }
+/* Espaço para a barra inferior fixa (celular/tablet). Telas com o botão "+" reservam um pouco mais. */
+.screen--nav { padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom) + 24px); }
+.screen--fab { padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom) + 104px); }
 .stack { display: flex; flex-direction: column; gap: 20px; }
 .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 20px; align-items: start; }
 .pad { padding: 24px; }
@@ -401,7 +410,7 @@ legend { padding: 0; }
   .screen { max-width: 880px; }
   .screen--narrow { max-width: 720px; }
   /* Telas de acesso: cartão centralizado sobre o fundo (sem a imagem da tela de primeiro acesso) */
-  .auth-layout { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 48px 24px; background: var(--page); }
+  .auth-layout { min-height: var(--vh); display: flex; align-items: center; justify-content: center; padding: 48px 24px; background: var(--page); }
   .auth-layout__card {
     width: 100%; max-width: 480px; background: var(--bg); border-radius: 16px;
     box-shadow: 0 1px 2px rgba(22, 25, 37, 0.06), 0 8px 30px rgba(22, 25, 37, 0.08);
@@ -429,7 +438,7 @@ legend { padding: 0; }
 @media (min-width: 1024px) {
   :root { --gutter: 48px; }
   /* Área logada: menu lateral fixo + conteúdo */
-  .shell { display: grid; grid-template-columns: var(--side-width) minmax(0, 1fr); min-height: 100vh; }
+  .shell { display: grid; grid-template-columns: var(--side-width) minmax(0, 1fr); min-height: var(--vh); }
   .shell__main { background: var(--page); min-width: 0; padding: 32px 0 48px; }
   .shell__main:has(> .screen:not(.screen--narrow)) { padding: 0; }
   .shell .screen { max-width: 1160px; padding-top: 40px; padding-bottom: 64px; min-height: 0; }
@@ -447,7 +456,7 @@ legend { padding: 0; }
 
   .side-nav {
     display: flex; flex-direction: column; gap: 28px;
-    position: sticky; top: 0; height: 100vh; padding: 36px 20px 24px;
+    position: sticky; top: 0; height: var(--vh); padding: 36px 20px 24px;
     background: var(--bg); border-right: 1px solid #e3e6ef;
   }
   .side-nav__logo { padding: 0 8px; }
