@@ -67,15 +67,19 @@ export const FORMS = [
         id: 'documentos',
         type: 'group',
         label: 'Apresenta RG, CPF e certidão de nascimento no momento da internação?',
+        // Basta responder um dos documentos (ex.: só "RG: Sim").
+        requireAny: true,
         items: [
-          { id: 'rg', type: 'radio', label: 'RG', options: SIM_NAO },
-          { id: 'cpf', type: 'radio', label: 'CPF', options: SIM_NAO },
-          { id: 'certidao', type: 'radio', label: 'Certidão de nascimento', options: SIM_NAO },
+          { id: 'rg', type: 'radio', label: 'RG', options: SIM_NAO, optional: true },
+          { id: 'cpf', type: 'radio', label: 'CPF', options: SIM_NAO, optional: true },
+          { id: 'certidao', type: 'radio', label: 'Certidão de nascimento', options: SIM_NAO, optional: true },
         ],
       },
       {
         id: 'segunda_via',
         type: 'radio',
+        // Se o paciente tem algum documento, não é preciso providenciar segunda via: a pergunta some.
+        hideIf: { anyOf: ['rg', 'cpf', 'certidao'], equals: 'sim' },
         label: 'Precisa providenciar segunda via de documento de identificação no período da internação?',
         options: [
           { value: 'caminhao_cidadao', label: 'Sim, acionar caminhão do cidadão.' },
@@ -86,8 +90,9 @@ export const FORMS = [
           },
           {
             value: 'papiloscopia',
-            label: 'Não, paciente inconsciente sem documento com foto ou paciente que nunca teve documentação - Acionar papiloscopia.',
+            label: 'Paciente inconsciente sem documento com foto ou paciente que nunca teve documentação - Acionar papiloscopia.',
           },
+          { value: 'nao', label: 'Não.' },
         ],
       },
       {
@@ -118,6 +123,19 @@ export const FORMS = [
         type: 'radio',
         label: 'O paciente possui uma rede de apoio familiar ou afetiva?',
         options: SIM_NAO,
+      },
+      {
+        id: 'cuidador_identificado',
+        type: 'radio',
+        label: 'Cuidador identificado?',
+        options: [
+          {
+            value: 'sim',
+            label: 'Sim.',
+            input: { id: 'cuidador', label: 'Identificação do cuidador', placeholder: 'Nome, parentesco e contato' },
+          },
+          { value: 'nao', label: 'Não.' },
+        ],
       },
       {
         id: 'ilpi',
@@ -229,6 +247,38 @@ export const FORMS = [
                     value: 'outras',
                     label: 'Outras.',
                     input: { id: 'outras_comorbidades', label: 'Outras comorbidades' },
+                  },
+                ],
+              },
+            ],
+          },
+          { value: 'nao', label: 'Não.' },
+        ],
+      },
+      {
+        id: 'usa_dispositivos',
+        type: 'radio',
+        label: 'O paciente está em uso de dispositivos?',
+        options: [
+          {
+            value: 'sim',
+            label: 'Sim.',
+            followUp: [
+              {
+                id: 'dispositivos',
+                type: 'checkbox',
+                label: 'Quais dispositivos este paciente está utilizando? (Você pode marcar mais de uma opção)',
+                options: [
+                  { value: 'sonda_vesical', label: 'Sonda vesical.' },
+                  { value: 'traqueostomo', label: 'Traqueóstomo.' },
+                  { value: 'bolsa_colostomia', label: 'Bolsa de colostomia.' },
+                  { value: 'ostomia', label: 'Ostomia.' },
+                  { value: 'drenos', label: 'Drenos.' },
+                  { value: 'oxigenio', label: 'Oxigênio.' },
+                  {
+                    value: 'outros',
+                    label: 'Outros.',
+                    input: { id: 'outros_dispositivos', label: 'Outros dispositivos' },
                   },
                 ],
               },
@@ -401,8 +451,8 @@ export const FORMS = [
     questions: [
       {
         id: 'abvds',
-        type: 'radio',
-        label: 'Qual o estado do paciente em relação aos ABVD’s?',
+        type: 'checkbox',
+        label: 'Qual o estado do paciente em relação aos ABVD’s? (Você pode marcar mais de uma opção)',
         options: [
           { value: 'independente', label: 'O paciente realiza ABVD’s independentemente.' },
           { value: 'incapacitado_temporario', label: 'O paciente está incapacitado para realizar ABVD’s temporariamente.' },
@@ -425,6 +475,15 @@ const isEmpty = (v) => v === undefined || v === null || (typeof v === 'string' &
  * Valida as respostas de uma seção. Retorna a lista de erros (vazia = ok)
  * e um objeto "limpo" só com as chaves conhecidas.
  */
+/** Resposta como lista (checkbox) ou valor único (radio) -> sempre lista. */
+const toList = (value) => (Array.isArray(value) ? value : value ? [value] : []);
+
+/** Pergunta escondida por causa de outra resposta (regra hideIf). */
+export function isHidden(q, answers = {}) {
+  const rule = q.hideIf;
+  return Boolean(rule && rule.anyOf.some((id) => answers[id] === rule.equals));
+}
+
 export function validateAnswers(role, answers = {}) {
   const form = formByRole(role);
   if (!form) return { errors: ['Função inválida.'], clean: {} };
@@ -433,8 +492,10 @@ export function validateAnswers(role, answers = {}) {
 
   const walk = (questions) => {
     for (const q of questions) {
+      if (isHidden(q, answers)) continue;
       if (q.type === 'group') {
         walk(q.items);
+        if (q.requireAny && !q.items.some((i) => clean[i.id] !== undefined)) errors.push(`Responda: ${q.label}`);
         continue;
       }
       const value = answers[q.id];
@@ -443,7 +504,7 @@ export function validateAnswers(role, answers = {}) {
         else if (!q.optional) errors.push(`Responda: ${q.label}`);
         continue;
       }
-      const selected = q.type === 'checkbox' ? (Array.isArray(value) ? value : []) : value ? [value] : [];
+      const selected = toList(value); // aceita resposta antiga de uma opção só
       const valid = selected.filter((v) => q.options.some((o) => o.value === v));
       if (valid.length === 0) {
         if (!q.optional) errors.push(`Responda: ${q.label}`);
@@ -474,6 +535,7 @@ export function describeAnswers(role, answers = {}) {
   const blocks = [];
   const walk = (questions, group) => {
     for (const q of questions) {
+      if (isHidden(q, answers)) continue;
       if (q.type === 'group') {
         blocks.push({ question: q.label, lines: [], extras: [], isGroup: true });
         walk(q.items, q);
@@ -487,7 +549,7 @@ export function describeAnswers(role, answers = {}) {
         blocks.push(block);
         continue;
       }
-      const selected = q.type === 'checkbox' ? value || [] : value ? [value] : [];
+      const selected = toList(value);
       const chosen = q.options.filter((o) => selected.includes(o.value));
       if (chosen.length === 0) block.lines.push('-Não informado.');
       else block.lines.push((q.type === 'checkbox' ? '+' : '-') + chosen.map((o) => o.label.replace(/\.$/, '')).join(' e ') + '.');

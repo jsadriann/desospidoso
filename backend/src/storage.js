@@ -2,15 +2,24 @@
 // Credenciais em backend/.env: AWS_ENDPOINT_URL_S3, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION
 // e AWS_S3_BUCKET (nome do bucket; padrão "desospidoso").
 import crypto from 'node:crypto';
-import {
-  CreateBucketCommand, DeleteObjectCommand, GetObjectCommand, HeadBucketCommand, PutObjectCommand, S3Client,
-} from '@aws-sdk/client-s3';
 import { config } from './config.js';
 import { one, query } from './db.js';
 
 const { endpoint, region, accessKeyId, secretAccessKey, bucket } = config.storage;
 
-export const storageEnabled = Boolean(endpoint && accessKeyId && secretAccessKey);
+// A biblioteca do S3 é carregada só se estiver instalada: sem ela (ex.: esqueceu o "npm install"),
+// a API continua funcionando e apenas as fotos ficam desativadas.
+let sdk = null;
+try {
+  sdk = await import('@aws-sdk/client-s3');
+} catch {
+  console.warn('[fotos] Biblioteca @aws-sdk/client-s3 não instalada. Rode "npm install" na pasta backend.');
+}
+const {
+  CreateBucketCommand, DeleteObjectCommand, GetObjectCommand, HeadBucketCommand, PutObjectCommand, S3Client,
+} = sdk || {};
+
+export const storageEnabled = Boolean(sdk && endpoint && accessKeyId && secretAccessKey);
 
 const s3 = storageEnabled
   ? new S3Client({
@@ -37,7 +46,7 @@ function requireStorage() {
 /** Cria o bucket se ele ainda não existir. Roda ao iniciar a API. */
 export async function ensureBucket() {
   if (!storageEnabled) {
-    console.warn('[fotos] Object Storage não configurado (AWS_* no .env). Envio de fotos desativado.');
+    if (sdk) console.warn('[fotos] Object Storage não configurado (AWS_* no .env). Envio de fotos desativado.');
     return;
   }
   try {

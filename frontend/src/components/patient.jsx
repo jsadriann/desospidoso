@@ -146,11 +146,16 @@ export function QuestionForm({ questions, answers, onChange }) {
   );
 }
 
+/** Mesma regra do backend (forms.js): esconde a pergunta conforme outra resposta. */
+const isHidden = (q, answers) => Boolean(q.hideIf && q.hideIf.anyOf.some((id) => answers[id] === q.hideIf.equals));
+
 function Question({ q, answers, set, nested }) {
+  if (isHidden(q, answers)) return null;
   if (q.type === 'group') {
     return (
       <fieldset className="q">
         <legend className="q__label">• {q.label}</legend>
+        {q.requireAny && <p className="q__hint">Basta responder pelo menos um documento. Não é preciso responder todos.</p>}
         {q.items.map((item) => (
           <div key={item.id} className="q__group">
             <p className="q__sublabel">{item.label}</p>
@@ -183,10 +188,11 @@ function Question({ q, answers, set, nested }) {
 function Options({ q, answers, set }) {
   const multi = q.type === 'checkbox';
   const current = answers[q.id];
-  const isOn = (v) => (multi ? (current || []).includes(v) : current === v);
+  // Resposta antiga de uma opção só (quando a pergunta era de escolha única) vira lista
+  const list = Array.isArray(current) ? current : current ? [current] : [];
+  const isOn = (v) => (multi ? list.includes(v) : current === v);
   const toggle = (v) => {
     if (!multi) return set({ [q.id]: v });
-    const list = current || [];
     set({ [q.id]: list.includes(v) ? list.filter((x) => x !== v) : [...list, v] });
   };
   return (

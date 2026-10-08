@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { api } from '../api.js';
 import { useApp } from '../context/AppContext.jsx';
-import { AuthLayout, Button, ErrorText, Logo, PasswordField, Screen, TextField } from '../components/ui.jsx';
+import { AppName, AuthLayout, Button, ErrorText, Logo, PasswordField, Screen, TextField } from '../components/ui.jsx';
 
 export default function Login() {
   const { signIn } = useApp();
@@ -48,7 +48,7 @@ export default function Login() {
           Não tem uma conta ainda? <Link className="link" to="/cadastro" title="Criar uma conta de profissional">Cadastre-se</Link>
         </p>
         <p className="center small">
-          <Link className="link muted-link" to="/sobre" title="Ver a apresentação do aplicativo">Conheça o DesospIdoso</Link>
+          <Link className="link muted-link" to="/sobre" title="Ver a apresentação do aplicativo">Conheça o <AppName /></Link>
         </p>
       </Screen>
     </AuthLayout>

@@ -7,6 +7,11 @@ import {
   IconChevronLeft, IconChevronRight, IconPlus, IconSearch, IconUser,
 } from './Icons.jsx';
 
+/** Nome do aplicativo no texto, como na logo: "desosp" + I verde em itálico + "doso". */
+export function AppName() {
+  return <span className="app-name">desosp<em>I</em>doso</span>;
+}
+
 /** Extrai o texto de um conteúdo React (usado como dica padrão ao passar o mouse). */
 export function textOf(node) {
   if (node == null || typeof node === 'boolean') return '';

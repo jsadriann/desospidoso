@@ -148,6 +148,8 @@ legend { padding: 0; }
 .search .input-wrap__btn { color: var(--gray); pointer-events: none; }
 .link { color: var(--green-text); text-decoration: none; font-size: 14px; }
 .link:hover { text-decoration: underline; }
+.app-name { white-space: nowrap; }
+.app-name em { font-style: italic; color: var(--green-text); }
 .link-btn {
   border: 0; background: none; padding: 4px 0; font: inherit; font-size: 14px; font-weight: 600;
   color: var(--green-text); cursor: pointer;
@@ -242,6 +244,7 @@ legend { padding: 0; }
 .q__label { font-size: 15px; font-weight: 700; line-height: 1.4; margin-bottom: 4px; }
 .q__group { display: flex; flex-direction: column; gap: 14px; margin-top: 6px; }
 .q__sublabel { font-size: 15px; font-weight: 700; }
+.q__hint { font-size: 14px; color: var(--gray); margin: -4px 0 4px; }
 .role-head { display: flex; align-items: center; gap: 14px; }
 .role-head h3 { font-size: 16px; font-weight: 700; line-height: 1.35; }
 .profession-icon { object-fit: contain; flex-shrink: 0; }

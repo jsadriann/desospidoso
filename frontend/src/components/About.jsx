@@ -1,10 +1,10 @@
-import { Button, Logo, Screen } from './ui.jsx';
+import { AppName, Button, Logo, Screen } from './ui.jsx';
 import { IconArrowLeft } from './Icons.jsx';
 
 const STEPS = [
   {
     title: 'Identificação do paciente',
-    text: 'Os dados básicos do idoso são cadastrados uma única vez e ficam disponíveis para toda a equipe.',
+    text: 'Os dados básicos da pessoa idosa são cadastrados uma única vez e ficam disponíveis para toda a equipe.',
   },
   {
     title: 'Avaliação de cada especialidade',
@@ -12,7 +12,7 @@ const STEPS = [
   },
   {
     title: 'Encaminhamento adequado',
-    text: 'Com a ficha completa, a equipe define o acolhimento institucional mais apropriado ao perfil de cada paciente.',
+    text: 'Com a ficha completa, a equipe identifica o perfil da paciente para realização dos encaminhamentos necessários.',
   },
 ];
 
@@ -44,15 +44,15 @@ export default function About({ greeting, onStart, onBack, startLabel = 'Começa
         </figure>
 
         <div className="about__intro">
-          <p className="about__eyebrow">Hospital e Maternidade Dra. Zilda Arns Neumann</p>
+          <p className="about__eyebrow">Secretaria Municipal de Saúde</p>
           <h1 className="about__title">{greeting || 'Cuidado que continua depois da alta'}</h1>
           <p className="about__lead">
-            O DesospIdoso ajuda a equipe a identificar, ainda durante a internação, os pacientes idosos que vão
-            precisar de acolhimento em uma instituição de longa permanência, pública ou conveniada, após a alta
-            hospitalar.
+            O <AppName /> ajuda a equipe a identificar, ainda durante a internação, os pacientes idosos que vão
+            precisar de acolhimento em uma Instituição de Longa Permanência para Idosos (ILPI), pública ou conveniada ao serviço
+            público, após a alta hospitalar.
           </p>
-          <p className="about__cta">Comece agora e contribua para um atendimento mais rápido, humanizado e eficiente.</p>
-          <Button onClick={onStart} title="Começar a usar o DesospIdoso">{startLabel}</Button>
+          <p className="about__cta">Comece agora e contribua para um encaminhamento mais rápido, humanizado e eficiente.</p>
+          <Button onClick={onStart} title="Começar a usar o desospIdoso">{startLabel}</Button>
         </div>
       </section>
 
