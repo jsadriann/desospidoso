@@ -478,6 +478,11 @@ const isEmpty = (v) => v === undefined || v === null || (typeof v === 'string' &
 /** Resposta como lista (checkbox) ou valor único (radio) -> sempre lista. */
 const toList = (value) => (Array.isArray(value) ? value : value ? [value] : []);
 
+// Na ficha (detalhes e PDF) a pergunta aparece sem a instrução de preenchimento.
+const questionText = (label) => label.replace(/\s*\(Você pode marcar mais de uma opção\)/, '');
+
+const withPeriod = (label) => label.replace(/\.$/, '') + '.';
+
 /** Pergunta escondida por causa de outra resposta (regra hideIf). */
 export function isHidden(q, answers = {}) {
   const rule = q.hideIf;
@@ -541,7 +546,7 @@ export function describeAnswers(role, answers = {}) {
         walk(q.items, q);
         continue;
       }
-      const block = { question: group ? null : q.label, subtitle: group ? q.label : null, lines: [], extras: [] };
+      const block = { question: group ? null : questionText(q.label), subtitle: group ? q.label : null, lines: [], extras: [] };
       const value = answers[q.id];
       if (q.type === 'text') {
         if (isEmpty(value)) block.lines.push('-Não informado.');
@@ -552,7 +557,9 @@ export function describeAnswers(role, answers = {}) {
       const selected = toList(value);
       const chosen = q.options.filter((o) => selected.includes(o.value));
       if (chosen.length === 0) block.lines.push('-Não informado.');
-      else block.lines.push((q.type === 'checkbox' ? '+' : '-') + chosen.map((o) => o.label.replace(/\.$/, '')).join(' e ') + '.');
+      // Várias marcações: uma por linha, na ordem do formulário
+      else if (q.type === 'checkbox') block.lines.push(...chosen.map((o) => `+${withPeriod(o.label)}`));
+      else block.lines.push(`-${withPeriod(chosen[0].label)}`);
       for (const opt of chosen) {
         if (opt.input && !isEmpty(answers[opt.input.id])) {
           block.extras.push({ label: opt.input.label.replace(' (opcional)', ''), value: answers[opt.input.id] });
