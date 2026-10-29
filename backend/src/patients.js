@@ -2,7 +2,7 @@
 import crypto from 'node:crypto';
 import { one, query } from './db.js';
 import { config } from './config.js';
-import { AXES, FORMS, ROLE_ORDER, TOTAL_SECTIONS, describeAnswers, formByRole } from './forms.js';
+import { AXES, FORMS, ROLES, ROLE_ORDER, TOTAL_SECTIONS, describeAnswers, formByRole } from './forms.js';
 
 const DAY = 86_400_000;
 const daysAgo = (n) => new Date(Date.now() - n * DAY);
@@ -63,7 +63,12 @@ export function toSummary(p, sections, userRole) {
     lastActionAt: p.last_action_at,
     sectionsDone: done.size,
     totalSections: TOTAL_SECTIONS,
-    progress: ROLE_ORDER.map((role) => ({ role, done: done.has(role) })),
+    // Uma entrada por função: nome, ícone e se a seção já foi preenchida
+    progress: ROLE_ORDER.map((role) => ({
+      role, label: ROLES[role], icon: formByRole(role).icon, done: done.has(role),
+    })),
+    // Funções que ainda não preencheram a sua seção (o que falta para concluir o arquivo)
+    pendingRoles: ROLE_ORDER.filter((role) => !done.has(role)).map((role) => ROLES[role]),
     status: statusFor(done, userRole),
     myRoleDone: done.has(userRole),
   };

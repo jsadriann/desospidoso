@@ -1,55 +1,87 @@
 import { Link } from 'react-router-dom';
 import { formatDate, lastActionLabel } from '../utils/format.js';
-import { IconCheckCircle, IconChevronRight, IconCircle, IconDash } from './Icons.jsx';
+import { IconCheck, IconCheckCircle, IconChevronRight, IconDash } from './Icons.jsx';
 import { OptionCard, TextField } from './ui.jsx';
-import { useApp } from '../context/AppContext.jsx';
 
-const STATUS = {
+export const STATUS = {
   PENDENTE_PARA_VOCE: {
-    label: 'Pendente para você', cls: 'status--pending', icon: <IconDash size={18} />,
+    label: 'Pendente para você', short: 'Pendentes para você', cls: 'mine', icon: <IconDash size={16} />,
     hint: 'A sua parte deste arquivo ainda não foi preenchida',
   },
   PENDENTE: {
-    label: 'Pendente', cls: 'status--pending', icon: <IconDash size={18} />,
+    label: 'Pendente', short: 'Pendentes', cls: 'wait', icon: <IconDash size={16} />,
     hint: 'A sua função já preencheu; faltam as seções de outras funções',
   },
   CONCLUIDO: {
-    label: 'Concluído', cls: 'status--done', icon: <IconCheckCircle size={18} />,
+    label: 'Concluído', short: 'Concluídos', cls: 'done', icon: <IconCheckCircle size={16} />,
     hint: 'Todas as seções foram preenchidas',
   },
 };
 
+/** Etiqueta colorida do status (laranja: falta a sua parte; azul: falta de outras funções; verde: concluído). */
 export function StatusTag({ status }) {
   const s = STATUS[status] || STATUS.PENDENTE;
-  return <p className={`status ${s.cls}`} title={s.hint}>{s.icon}{s.label}</p>;
+  return <span className={`badge badge--${s.cls}`} title={s.hint}>{s.icon}{s.label}</span>;
 }
 
-/** Um círculo por seção; ao passar o mouse mostra a função e se já foi preenchida. */
-export function ProgressDots({ progress }) {
-  const { meta } = useApp();
+/** "a, b e c" */
+export const joinList = (items) => (items.length <= 1 ? items.join('') : `${items.slice(0, -1).join(', ')} e ${items[items.length - 1]}`);
+
+/** Barra de progresso das seções (ex.: 5/7). */
+export function ProgressBar({ done, total, status }) {
+  const cls = (STATUS[status] || STATUS.PENDENTE).cls;
   return (
-    <div className="dots" aria-hidden="true">
-      {progress.map((p) => (
-        <span key={p.role} className="dot-wrap" title={`${meta?.roles?.[p.role] || p.role}: ${p.done ? 'seção preenchida' : 'seção ainda não preenchida'}`}>
-          {p.done ? <IconCheckCircle size={20} className="dot dot--done" /> : <IconCircle size={20} className="dot" />}
-        </span>
-      ))}
+    <div className="progress" title={`${done} de ${total} seções concluídas`}>
+      <span className="progress__track">
+        <span className={`progress__fill progress__fill--${cls}`} style={{ width: `${(done / total) * 100}%` }} />
+      </span>
+      <span className="progress__count">{done}/{total}</span>
     </div>
   );
 }
 
-/** Cartão da lista "Pacientes" (status, progresso e última alteração). */
-export function PatientCard({ patient, to }) {
+/** Ícone de cada função: colorido com check quando a seção foi preenchida, apagado quando ainda falta. */
+export function RoleProgress({ progress, size = 30 }) {
   return (
-    <Link to={to} className="card card--link" title={`Abrir os detalhes de ${patient.fullName}`}>
-      <div className="card__head">
-        <span className="card__name">{patient.fullName}</span>
+    <ul className="roles" aria-label="Seções por função">
+      {progress.map((p) => (
+        <li
+          key={p.role}
+          className={`roles__item ${p.done ? 'is-done' : ''}`}
+          title={`${p.label}: ${p.done ? 'seção preenchida' : 'falta preencher'}`}
+          style={{ width: size, height: size }}
+        >
+          <img src={`/img/${p.icon}.png`} alt={`${p.label}: ${p.done ? 'preenchida' : 'falta preencher'}`} />
+          {p.done && <span className="roles__check" aria-hidden="true"><IconCheck size={10} strokeWidth={3.5} /></span>}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/** Texto do que falta. No cartão, até 4 funções aparecem pelo nome; acima disso, só a quantidade. */
+export function MissingRoles({ roles, compact = false }) {
+  if (!roles?.length) return null;
+  const text = compact && roles.length > 4 ? `${roles.length} funções` : joinList(roles);
+  return <p className="missing"><strong>Falta preencher:</strong> {text}</p>;
+}
+
+/** Cartão da lista "Pacientes": status em cor, progresso, funções e última alteração. */
+export function PatientCard({ patient, to }) {
+  const s = STATUS[patient.status] || STATUS.PENDENTE;
+  return (
+    <Link to={to} className={`card card--link pcard pcard--${s.cls}`} title={`Abrir os detalhes de ${patient.fullName}`}>
+      <div className="pcard__top">
+        <StatusTag status={patient.status} />
         <span className="card__id">ID {patient.code}</span>
+      </div>
+      <div className="card__head">
+        <span className="card__name pcard__name">{patient.fullName}</span>
         <IconChevronRight size={22} />
       </div>
-      <StatusTag status={patient.status} />
-      <p className="card__line">{patient.sectionsDone} de {patient.totalSections} seções concluídas</p>
-      <ProgressDots progress={patient.progress} />
+      <ProgressBar done={patient.sectionsDone} total={patient.totalSections} status={patient.status} />
+      <RoleProgress progress={patient.progress} />
+      <MissingRoles roles={patient.pendingRoles} compact />
       <p className="card__foot">{lastActionLabel(patient.lastAction, patient.lastActionAt)}</p>
     </Link>
   );

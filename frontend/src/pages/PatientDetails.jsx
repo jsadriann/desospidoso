@@ -3,9 +3,11 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { api } from '../api.js';
 import { useApp } from '../context/AppContext.jsx';
 import { useAsync } from '../hooks.js';
-import { Button, ConfirmModal, ErrorText, Loading, Screen, SectionTitle, TopBar } from '../components/ui.jsx';
-import { IdentificationDetails, SectionAnswers } from '../components/patient.jsx';
-import { IconCheckCircle, IconCircle, IconDash, IconRestore, IconTrash } from '../components/Icons.jsx';
+import { Button, ConfirmModal, ErrorText, Loading, Screen, TopBar } from '../components/ui.jsx';
+import {
+  IdentificationDetails, MissingRoles, ProfessionIcon, ProgressBar, RoleProgress, SectionAnswers, StatusTag,
+} from '../components/patient.jsx';
+import { IconRestore, IconTrash } from '../components/Icons.jsx';
 import { createdLine } from '../utils/format.js';
 
 export default function PatientDetails() {
@@ -20,7 +22,6 @@ export default function PatientDetails() {
   if (error) return <Screen narrow><TopBar title="Detalhes" /><ErrorText>{error.message}</ErrorText></Screen>;
   const p = data.patient;
   const trashed = !!p.deletedAt;
-  const complete = p.sectionsDone === p.totalSections;
 
   const act = async () => {
     setBusy(true);
@@ -50,33 +51,54 @@ export default function PatientDetails() {
         )}
       />
 
-      <SectionTitle icon={<IconCheckCircle className="text-green" />}>Identificação</SectionTitle>
-      <p className="small">{createdLine(p.createdAt, p.createdByName)}</p>
-      <IdentificationDetails patient={p} />
-      <Button variant="outline" disabled={trashed} title={trashed ? 'Restaure o arquivo para poder editar' : 'Editar a identificação do paciente'} onClick={() => navigate(`/pacientes/${id}/identificacao`)}>Editar</Button>
+      {/* Resumo: situação do arquivo e quais funções ainda faltam */}
+      <section className="panel panel--summary" aria-label="Resumo do arquivo">
+        <div className="panel__body">
+          <div className="summary-head">
+            <StatusTag status={p.status} />
+            <span className="muted small">ID {p.code}</span>
+          </div>
+          <p className="summary-name">{p.fullName}</p>
+          <ProgressBar done={p.sectionsDone} total={p.totalSections} status={p.status} />
+          <RoleProgress progress={p.progress} size={34} />
+          {p.pendingRoles.length
+            ? <MissingRoles roles={p.pendingRoles} />
+            : <p className="missing missing--done">Todas as funções preencheram a sua seção.</p>}
+        </div>
+      </section>
 
-      <SectionTitle icon={complete ? <IconCheckCircle className="text-green" /> : <IconDash className="text-pending" />}>
-        Dados específicos do paciente por função
-      </SectionTitle>
+      <section className="panel">
+        <h2 className="panel__head">Identificação</h2>
+        <div className="panel__body">
+          <p className="small">{createdLine(p.createdAt, p.createdByName)}</p>
+          <IdentificationDetails patient={p} />
+          <Button variant="outline" disabled={trashed} title={trashed ? 'Restaure o arquivo para poder editar' : 'Editar a identificação do paciente'} onClick={() => navigate(`/pacientes/${id}/identificacao`)}>Editar</Button>
+        </div>
+      </section>
+
+      <h2 className="group-title">Dados específicos do paciente por função</h2>
 
       {p.sections.map((s) => (
-        <section key={s.role} className="role-section">
-          <h3 className="role-section__title">
-            {s.done ? <IconCheckCircle className="text-green" /> : <IconCircle />}
-            {s.title}
+        <section key={s.role} className={`panel ${s.done ? '' : 'panel--todo'}`}>
+          <h3 className="panel__head panel__head--role">
+            <ProfessionIcon icon={s.icon} size={36} />
+            <span className="panel__title">{s.title}</span>
+            <span className={`badge ${s.done ? 'badge--done' : 'badge--wait'}`}>{s.done ? 'Preenchida' : 'Falta preencher'}</span>
           </h3>
-          {s.done ? (
-            <>
-              <p className="small">{createdLine(s.updatedAt, s.filledByName, s.updatedAt !== s.createdAt ? 'Atualizado' : 'Criado')}</p>
-              <SectionAnswers display={s.display} />
-              {s.canEdit && <Button variant="outline" title="Editar a seção da sua função" onClick={() => navigate(`/pacientes/${id}/preencher`)}>Editar</Button>}
-            </>
-          ) : (
-            <>
-              <p className="muted small">Seção ainda não preenchida.</p>
-              {s.canEdit && <Button title="Preencher os dados específicos da sua função" onClick={() => navigate(`/pacientes/${id}/preencher`)}>Preencher minha seção</Button>}
-            </>
-          )}
+          <div className="panel__body">
+            {s.done ? (
+              <>
+                <p className="small">{createdLine(s.updatedAt, s.filledByName, s.updatedAt !== s.createdAt ? 'Atualizado' : 'Criado')}</p>
+                <SectionAnswers display={s.display} />
+                {s.canEdit && <Button variant="outline" title="Editar a seção da sua função" onClick={() => navigate(`/pacientes/${id}/preencher`)}>Editar</Button>}
+              </>
+            ) : (
+              <>
+                <p className="muted small">Seção ainda não preenchida.</p>
+                {s.canEdit && <Button title="Preencher os dados específicos da sua função" onClick={() => navigate(`/pacientes/${id}/preencher`)}>Preencher minha seção</Button>}
+              </>
+            )}
+          </div>
         </section>
       ))}
 

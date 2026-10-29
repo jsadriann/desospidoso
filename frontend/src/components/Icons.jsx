@@ -118,3 +118,9 @@ export const IconSun = (p) => (
 export const IconMoon = (p) => (
   <Svg {...p}><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" /></Svg>
 );
+export const IconCheck = (p) => (
+  <Svg {...p}><path d="M5 12.5l4.5 4.5L19 7.5" /></Svg>
+);
+export const IconFilter = (p) => (
+  <Svg {...p}><path d="M4 5h16" /><path d="M7 12h10" /><path d="M10 19h4" /></Svg>
+);

@@ -1,6 +1,18 @@
 import { useNavigate } from 'react-router-dom';
 import { Button, Screen, SectionTitle, TopBar } from '../components/ui.jsx';
-import { IconCheckCircle, IconChevronRight, IconCircle } from '../components/Icons.jsx';
+import { IconChevronRight, IconDash } from '../components/Icons.jsx';
+import { ProgressBar, RoleProgress } from '../components/patient.jsx';
+
+// Exemplo para o cartão ilustrativo: 3 funções preenchidas
+const EXAMPLE = [
+  ['ASSISTENTE_SOCIAL', 'Assistente social', 'assistente-social', true],
+  ['ENFERMEIRO', 'Enfermeiro', 'enfermeiro', true],
+  ['FISIOTERAPEUTA', 'Fisioterapeuta', 'fisioterapeuta', true],
+  ['MEDICO', 'Médico', 'medico', false],
+  ['NUTRICIONISTA', 'Nutricionista', 'nutricionista', false],
+  ['PSICOLOGO', 'Psicólogo / Psiquiatra', 'psicologo', false],
+  ['TERAPEUTA_OCUPACIONAL', 'Terapeuta ocupacional', 'terapeuta-ocupacional', false],
+].map(([role, label, icon, done]) => ({ role, label, icon, done }));
 
 export default function Help() {
   const navigate = useNavigate();
@@ -33,33 +45,48 @@ export default function Help() {
       <p>Assim, cada profissional só preenche os dados específicos da sua área, sem repetir informações que já foram registradas.</p>
 
       <h2>Como ler cada cartão da lista?</h2>
-      <p>Cada arquivo aparece como um cartão com o nome do paciente, o ID, o status, o progresso, progresso visual e a informação da última alteração.</p>
-      <div className="card help__card" aria-hidden="true">
-        <div className="card__head">
-          <span className="card__name">Nome completo do paciente</span>
+      <p>Cada arquivo aparece como um cartão com o status, o ID, o nome do paciente, o progresso, as funções que já preencheram, o que falta preencher e a informação da última alteração.</p>
+      <div className="card pcard pcard--mine help__card" aria-hidden="true">
+        <div className="pcard__top">
+          <span className="badge badge--mine"><IconDash size={16} />Status</span>
           <span className="card__id">NÚMERO IDENTIFICADOR</span>
+        </div>
+        <div className="card__head">
+          <span className="card__name pcard__name">Nome completo do paciente</span>
           <IconChevronRight size={22} />
         </div>
-        <p className="status status--done">Status</p>
-        <p className="card__line">Progresso</p>
-        <p className="status status--done">Progresso visual</p>
+        <ProgressBar done={3} total={7} status="PENDENTE_PARA_VOCE" />
+        <RoleProgress progress={EXAMPLE} />
+        <p className="missing"><strong>Falta preencher:</strong> funções que ainda não preencheram</p>
         <p className="card__foot">Informação da última alteração</p>
       </div>
 
       <h2>Qual o significado para cada tipo de Status?</h2>
-      <p><strong>Pendente para você:</strong> A sua parte do arquivo ainda não foi preenchida.</p>
-      <p><strong>Pendente:</strong> Você ou alguém da mesma função já preencheu a seção dos dados específicos do paciente por função, mas os participantes das outras funções ainda não preencheram as deles.</p>
-      <p><strong>Concluído:</strong> todas as seções foram preenchidas.</p>
+      <p>A cor do status aparece na etiqueta, na faixa à esquerda do cartão e na barra de progresso.</p>
+      <p className="help__legend"><span className="badge badge--mine">Laranja</span> <span><strong>Pendente para você:</strong> A sua parte do arquivo ainda não foi preenchida.</span></p>
+      <p className="help__legend"><span className="badge badge--wait">Azul</span> <span><strong>Pendente:</strong> Você ou alguém da mesma função já preencheu a seção dos dados específicos do paciente por função, mas os participantes das outras funções ainda não preencheram as deles.</span></p>
+      <p className="help__legend"><span className="badge badge--done">Verde</span> <span><strong>Concluído:</strong> todas as seções foram preenchidas.</span></p>
 
-      <h2>Como entender o progresso e o progresso visual?</h2>
+      <h2>Como entender o progresso?</h2>
       <p>
-        Abaixo do status, o cartão mostra o progresso de quantas seções já foram concluídas (por exemplo, "3 de 7 seções
-        concluídas") e uma indicação visual, que representa cada seção do arquivo do paciente por círculos. Cada círculo
-        representa uma seção:
+        A barra mostra quantas seções já foram concluídas (por exemplo, 3/7). Abaixo dela, cada função aparece com o seu
+        ícone, e ao passar o mouse sobre um ícone aparece o nome da função:
       </p>
-      <p className="help__legend"><IconCheckCircle size={22} className="text-green" /> <span><strong>Círculo com check <span className="text-green">verde</span>:</strong> Seção preenchida.</span></p>
-      <p className="help__legend"><IconCircle size={22} /> <span><strong>Círculo <span className="muted">vazio</span>:</strong> Seção ainda não preenchida.</span></p>
+      <p className="help__legend"><RoleProgress progress={[EXAMPLE[0]]} /> <span><strong>Ícone colorido com check:</strong> seção preenchida.</span></p>
+      <p className="help__legend"><RoleProgress progress={[EXAMPLE[6]]} /> <span><strong>Ícone apagado:</strong> seção ainda não preenchida.</span></p>
+      <p>
+        <strong>Falta preencher:</strong> mostra quais funções ainda não preencheram a sua seção. No cartão aparecem os
+        nomes quando faltam até 4 funções; acima disso, aparece a quantidade. A lista completa fica no resumo, no topo da
+        tela de detalhes do paciente.
+      </p>
       <p><strong>Atenção:</strong> A identificação do paciente não aparece no progresso.</p>
+
+      <h2>Como usar o resumo e os filtros?</h2>
+      <p>
+        Acima dos cartões, o resumo mostra quantos arquivos há em cada status. Clique em um dos quadros para ver apenas os
+        arquivos daquele status e clique de novo para ver todos. Também é possível filtrar pelo eixo de internação e
+        escolher a ordem dos cartões: alteração mais recente, alteração mais antiga, nome ou menos seções preenchidas.
+      </p>
 
       <h2>Como entender a informação da última alteração?</h2>
       <p>O texto no canto inferior direito do cartão corresponde à última alteração ou momento do arquivo do paciente, que pode variar dependendo da última ação do participante:</p>

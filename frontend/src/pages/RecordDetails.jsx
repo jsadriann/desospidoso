@@ -3,9 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { api } from '../api.js';
 import { useApp } from '../context/AppContext.jsx';
 import { useAsync } from '../hooks.js';
-import { Actions, Button, ErrorText, Loading, Screen, SectionTitle, TopBar } from '../components/ui.jsx';
+import { Actions, Button, ErrorText, Loading, Screen, TopBar } from '../components/ui.jsx';
 import { IdentificationDetails, ProfessionIcon, SectionAnswers } from '../components/patient.jsx';
-import { IconCheckCircle } from '../components/Icons.jsx';
 import { createdLine, formatDate } from '../utils/format.js';
 
 export default function RecordDetails() {
@@ -36,19 +35,25 @@ export default function RecordDetails() {
       <TopBar title="Detalhes da ficha" onBack={() => navigate('/fichas')} backTitle="Voltar para as fichas completas" />
       <p className="muted small">Ficha concluída dia {formatDate(p.completedAt || p.updatedAt)}</p>
 
-      <SectionTitle icon={<IconCheckCircle className="text-green" />}>Identificação</SectionTitle>
-      <p className="small">{createdLine(p.createdAt, p.createdByName)}</p>
-      <IdentificationDetails patient={p} />
+      <section className="panel">
+        <h2 className="panel__head">Identificação</h2>
+        <div className="panel__body">
+          <p className="small">{createdLine(p.createdAt, p.createdByName)}</p>
+          <IdentificationDetails patient={p} />
+        </div>
+      </section>
 
-      <SectionTitle icon={<IconCheckCircle className="text-green" />}>Dados específicos do paciente por função</SectionTitle>
+      <h2 className="group-title">Dados específicos do paciente por função</h2>
       {p.sections.map((s) => (
-        <section key={s.role} className="role-section">
-          <div className="role-head">
-            <ProfessionIcon icon={s.icon} size={44} />
-            <h3>{s.title}</h3>
+        <section key={s.role} className="panel">
+          <h3 className="panel__head panel__head--role">
+            <ProfessionIcon icon={s.icon} size={36} />
+            <span className="panel__title">{s.title}</span>
+          </h3>
+          <div className="panel__body">
+            <p className="small">{createdLine(s.updatedAt, s.filledByName, s.updatedAt !== s.createdAt ? 'Atualizado' : 'Criado')}</p>
+            <SectionAnswers display={s.display} />
           </div>
-          <p className="small">{createdLine(s.updatedAt, s.filledByName, s.updatedAt !== s.createdAt ? 'Atualizado' : 'Criado')}</p>
-          <SectionAnswers display={s.display} />
         </section>
       ))}
 

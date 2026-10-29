@@ -45,7 +45,7 @@ export default function About({ greeting, onStart, onBack, startLabel = 'Começa
 
         <div className="about__intro">
           <p className="about__eyebrow">Secretaria Municipal de Saúde</p>
-          <h1 className="about__title">{greeting || 'Cuidado que continua depois da alta'}</h1>
+          <h1 className="about__title">{greeting || 'Da internação à desospitalização da pessoa idosa'}</h1>
           <p className="about__lead">
             O <AppName /> ajuda a equipe a identificar, ainda durante a internação, os pacientes idosos que vão
             precisar de acolhimento em uma Instituição de Longa Permanência para Idosos (ILPI), pública ou conveniada ao serviço
