@@ -5,6 +5,7 @@ import { useApp } from '../context/AppContext.jsx';
 import { useAsync, useCountUp, useDebounced } from '../hooks.js';
 import { BottomNav, ErrorText, InfoBanner, Loading, Screen, SearchField, Tabs } from '../components/ui.jsx';
 import { PatientCard, STATUS } from '../components/patient.jsx';
+import FillDrawer from '../components/FillDrawer.jsx';
 import { IconHelp, IconPlus, IconTrash } from '../components/Icons.jsx';
 
 const EMPTY = {
@@ -36,7 +37,8 @@ export default function Patients() {
   const [axis, setAxis] = useState('');
   const [sort, setSort] = useState('recente');
   const q = useDebounced(query);
-  const { data, loading, error } = useAsync(() => api.patients(tab, q), [tab, q]);
+  const { data, loading, error, reload } = useAsync(() => api.patients(tab, q), [tab, q]);
+  const [filling, setFilling] = useState(null); // id do paciente com o formulário aberto por cima
   const all = data?.patients || [];
 
   // Resumo: quantos arquivos há em cada status (respeitando o filtro de eixo)
@@ -127,13 +129,14 @@ export default function Patients() {
           <p className="empty">Nenhum paciente com esses filtros.</p>
         )}
         <div className="cards">
-          {patients.map((p) => <PatientCard key={p.id} patient={p} to={`/pacientes/${p.id}`} />)}
+          {patients.map((p) => <PatientCard key={p.id} patient={p} to={`/pacientes/${p.id}`} onFill={() => setFilling(p.id)} />)}
         </div>
       </div>
       <button className="fab" aria-label="Novo paciente" title="Criar um novo arquivo de paciente" onClick={() => navigate('/pacientes/novo')}>
         <IconPlus size={26} />
       </button>
       <BottomNav />
+      {filling && <FillDrawer patientId={filling} onClose={() => setFilling(null)} onSaved={reload} />}
     </Screen>
   );
 }

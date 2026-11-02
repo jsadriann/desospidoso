@@ -139,3 +139,6 @@ export const IconDoor = (p) => (
 export const IconBed = (p) => (
   <Svg {...p}><path d="M3 7v13" /><path d="M3 16h18v4" /><path d="M21 16v-3a3 3 0 0 0-3-3h-8v6" /><circle cx="6.5" cy="12.5" r="1.8" /></Svg>
 );
+export const IconPencil = (p) => (
+  <Svg {...p}><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4z" /><path d="M13.5 6.5l4 4" /></Svg>
+);

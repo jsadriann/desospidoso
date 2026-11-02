@@ -1,7 +1,7 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { formatDate, lastActionLabel } from '../utils/format.js';
 import {
-  IconBed, IconBuilding, IconCalendar, IconCheck, IconCheckCircle, IconChevronRight, IconDash, IconDoor,
+  IconBed, IconBuilding, IconCalendar, IconCheck, IconCheckCircle, IconChevronRight, IconDash, IconDoor, IconPencil,
 } from './Icons.jsx';
 import { OptionCard, TextField } from './ui.jsx';
 
@@ -68,28 +68,47 @@ export function MissingRoles({ roles, compact = false }) {
   return <p className="missing" title={`Falta preencher: ${joinList(roles)}`}><strong>Falta preencher:</strong> {text}</p>;
 }
 
-/** Cartão da lista "Pacientes": status em cor, progresso, funções e última alteração. */
-export function PatientCard({ patient, to }) {
+/**
+ * Cartão da lista "Pacientes": status em cor, progresso, funções e última alteração.
+ * Se a parte do usuário ainda falta, ao passar o mouse aparece o botão "Preencher" (no celular fica sempre
+ * visível). onFill(patient) abre o formulário por cima da lista; sem onFill, abre a tela de preenchimento.
+ */
+export function PatientCard({ patient, to, onFill }) {
+  const navigate = useNavigate();
   const s = STATUS[patient.status] || STATUS.PENDENTE;
+  const canFill = !patient.myRoleDone && !patient.deletedAt;
   return (
-    <Link to={to} className={`group card card--link pcard pcard--${s.cls}`} title={`Abrir os detalhes de ${patient.fullName}`}>
-      <div className="pcard__top">
-        <StatusTag status={patient.status} />
-        <span className="card__id">ID {patient.code}</span>
-      </div>
-      <div className="card__head">
-        <span className="card__name pcard__name transition-colors duration-200 group-hover:text-brand-text">{patient.fullName}</span>
-        <span className="inline-flex transition-transform duration-300 ease-out group-hover:translate-x-1">
-          <IconChevronRight size={22} />
-        </span>
-      </div>
-      <ProgressBar done={patient.sectionsDone} total={patient.totalSections} status={patient.status} />
-      <RoleProgress progress={patient.progress} />
-      {patient.pendingRoles.length
-        ? <MissingRoles roles={patient.pendingRoles} compact />
-        : <p className="missing missing--done">Todas as funções preencheram.</p>}
-      <p className="card__foot">{lastActionLabel(patient.lastAction, patient.lastActionAt)}</p>
-    </Link>
+    <div className="group pcard-wrap">
+      <Link to={to} className={`card card--link pcard pcard--${s.cls}`} title={`Abrir os detalhes de ${patient.fullName}`}>
+        <div className="pcard__top">
+          <StatusTag status={patient.status} />
+          <span className="card__id">ID {patient.code}</span>
+        </div>
+        <div className="card__head">
+          <span className="card__name pcard__name transition-colors duration-200 group-hover:text-brand-text">{patient.fullName}</span>
+          <span className="inline-flex transition-transform duration-300 ease-out group-hover:translate-x-1">
+            <IconChevronRight size={22} />
+          </span>
+        </div>
+        <ProgressBar done={patient.sectionsDone} total={patient.totalSections} status={patient.status} />
+        <RoleProgress progress={patient.progress} />
+        {patient.pendingRoles.length
+          ? <MissingRoles roles={patient.pendingRoles} compact />
+          : <p className="missing missing--done">Todas as funções preencheram.</p>}
+        <p className="card__foot">{lastActionLabel(patient.lastAction, patient.lastActionAt)}</p>
+      </Link>
+      {canFill && (
+        <button
+          type="button"
+          className="pcard__fill"
+          title={`Preencher a sua seção do arquivo de ${patient.fullName}`}
+          onClick={() => (onFill ? onFill(patient) : navigate(`/pacientes/${patient.id}/preencher`, { state: { from: 'lista' } }))}
+        >
+          <IconPencil size={15} strokeWidth={2.2} />
+          Preencher
+        </button>
+      )}
+    </div>
   );
 }
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { api } from '../api.js';
 import { useApp } from '../context/AppContext.jsx';
 import { Actions, Button, ConfirmModal, ErrorText, Loading, Screen, SectionTitle, Stepper, TopBar } from '../components/ui.jsx';
@@ -11,6 +11,8 @@ import { formatDate } from '../utils/format.js';
 export default function FillSection() {
   const { id } = useParams();
   const navigate = useNavigate();
+  // Veio do botão "Preencher" do cartão: sem a etapa 1, e ao salvar volta para a lista
+  const fromList = useLocation().state?.from === 'lista';
   const { user, meta, notify } = useApp();
   const [patient, setPatient] = useState(null);
   const [answers, setAnswers] = useState({});
@@ -35,7 +37,7 @@ export default function FillSection() {
     try {
       await api.saveSection(id, user.role, answers);
       notify('success');
-      navigate(`/pacientes/${id}`, { replace: true });
+      navigate(fromList ? '/pacientes' : `/pacientes/${id}`, { replace: true });
     } catch (err) {
       setConfirm(false);
       setError(err.message);
@@ -51,7 +53,7 @@ export default function FillSection() {
 
   return (
     <Screen narrow>
-      {!editingExisting && <Stepper step={2} />}
+      {!editingExisting && !fromList && <Stepper step={2} />}
       <TopBar title="Preencher dados específicos do paciente por função" onBack={() => navigate(-1)} backTitle="Voltar sem salvar" />
       <p className="center small">Preencha os dados específicos do paciente abaixo</p>
 

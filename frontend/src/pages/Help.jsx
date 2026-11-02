@@ -61,6 +61,13 @@ export default function Help() {
         <p className="card__foot">Informação da última alteração</p>
       </div>
 
+      <p>
+        <strong>Preencher:</strong> quando a sua parte do arquivo ainda não foi preenchida, ao passar o mouse sobre o
+        cartão aparece o botão Preencher. Ele abre o formulário da sua função por cima da lista, sem precisar abrir os
+        detalhes do paciente. Ao salvar, o formulário fecha e a lista é atualizada. No celular, o botão fica sempre
+        visível.
+      </p>
+
       <h2>Qual o significado para cada tipo de Status?</h2>
       <p>A cor do status aparece na etiqueta, na faixa à esquerda do cartão e na barra de progresso.</p>
       <p className="help__legend"><span className="badge badge--mine">Laranja</span> <span><strong>Pendente para você:</strong> A sua parte do arquivo ainda não foi preenchida.</span></p>
