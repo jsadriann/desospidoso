@@ -42,7 +42,7 @@ dividido em três partes:
 - `@theme`: as cores, a fonte (Inter) e as animações do app. Elas viram classes do Tailwind, como `bg-brand`,
   `text-ink`, `bg-st-done-bg` e `animate-fade-up`. As cores apontam para variáveis CSS, por isso mudam sozinhas no
   tema escuro.
-- `@custom-variant dark`: o tema escuro é ativado por `data-theme="dark"` no `<html>` (Perfil > Preferências), e a
+- `@custom-variant dark`: o tema escuro é ativado por `data-theme="dark"` no `<html>` (chave de tema no Perfil), e a
   variante `dark:` do Tailwind segue essa escolha.
 - `@layer components`: os componentes do app (cartões, botões, formulários, telas). Ficam numa camada abaixo das
   classes utilitárias, então uma classe do Tailwind no JSX sempre pode ajustar um componente.
@@ -160,7 +160,7 @@ enviar, a API confere se é mesmo PNG, JPG ou WEBP e guarda o arquivo no Object 
 referência, na tabela `user_avatars`, ligada ao usuário com `ON DELETE CASCADE`. Quando a conta é excluída (ou a foto
 é trocada ou removida), um gatilho do banco coloca o arquivo na fila `storage_deletions` e a API o apaga do bucket.
 
-Em Perfil > Preferências dá para escolher entre o tema claro e o escuro. A escolha fica salva na conta (coluna
+No Perfil, a chave ao lado da foto troca entre o tema claro e o escuro. A escolha fica salva na conta (coluna
 `theme` da tabela `users`), então vale em qualquer navegador até o usuário trocar de novo.
 
 ### Questionários

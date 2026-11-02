@@ -4,7 +4,7 @@ import { useApp } from '../context/AppContext.jsx';
 import { apiUrl } from '../api.js';
 import {
   IconAlert, IconArrowLeft, IconCheckCircle, IconClipboard, IconClose, IconEye, IconEyeOff, IconFile, IconInfo,
-  IconChevronLeft, IconChevronRight, IconPlus, IconSearch, IconUser,
+  IconChevronLeft, IconChevronRight, IconMoon, IconPlus, IconSearch, IconSun, IconUser,
 } from './Icons.jsx';
 
 /** Nome do aplicativo no texto, como na logo: "desosp" + I verde em itálico + "doso". */
@@ -361,6 +361,40 @@ export function BottomNav() {
         </NavLink>
       ))}
     </nav>
+  );
+}
+
+/**
+ * Chave liga/desliga do tema escuro (Perfil). A bolinha vai para a direita no escuro.
+ * A escolha é aplicada na hora e salva na conta do usuário.
+ */
+export function ThemeSwitch() {
+  const { theme, setTheme, notify } = useApp();
+  const [busy, setBusy] = useState(false);
+  const dark = theme === 'dark';
+  const toggle = async () => {
+    if (busy) return;
+    setBusy(true);
+    const ok = await setTheme(dark ? 'light' : 'dark');
+    setBusy(false);
+    if (!ok) notify('error', 'Não foi possível salvar o tema. Tente novamente.');
+  };
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={dark}
+      aria-label="Tema escuro"
+      title={dark ? 'Tema escuro ligado (clique para usar o claro)' : 'Tema claro ligado (clique para usar o escuro)'}
+      className={`theme-switch ${dark ? 'is-on' : ''}`}
+      onClick={toggle}
+    >
+      <span className="theme-switch__track">
+        <IconSun size={14} className="theme-switch__sun" />
+        <IconMoon size={14} className="theme-switch__moon" />
+        <span className="theme-switch__knob">{dark ? <IconMoon size={14} /> : <IconSun size={14} />}</span>
+      </span>
+    </button>
   );
 }
 

@@ -5,7 +5,7 @@
      classes utilitárias, então uma classe do Tailwind no JSX sempre consegue ajustar um componente. */
 @import "tailwindcss";
 
-/* Tema escuro: ativado por data-theme="dark" no <html> (Perfil > Preferências). Uso: dark:bg-panel */
+/* Tema escuro: ativado por data-theme="dark" no <html> (chave no Perfil). Uso: dark:bg-panel */
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
 @theme inline {
@@ -730,36 +730,26 @@ legend { padding: 0; }
 }
 .menu span { flex: 1; }
 
-/* ---------- Preferências (tema) ---------- */
-.theme-options { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); gap: 16px; }
-.theme-option {
-  position: relative; display: flex; flex-direction: column; gap: 14px; padding: 14px; text-align: left;
-  border: 1px solid var(--gray); border-radius: var(--radius-lg); background: var(--bg); color: var(--text);
-  cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s;
+/* ---------- Chave do tema claro/escuro (Perfil) ---------- */
+.profile-head__theme { margin-left: auto; align-self: flex-start; padding-top: 6px; }
+.theme-switch { border: 0; background: none; padding: 4px; border-radius: 999px; cursor: pointer; flex-shrink: 0; }
+.theme-switch:focus-visible { outline: 3px solid rgba(36, 99, 23, 0.4); outline-offset: 2px; }
+.theme-switch__track {
+  position: relative; display: flex; align-items: center; justify-content: space-between;
+  width: 60px; height: 32px; padding: 0 9px; border-radius: 999px;
+  background: var(--hover); border: 1px solid var(--toggle-border); color: var(--gray);
+  transition: background-color .3s ease, border-color .3s ease;
 }
-.theme-option:hover { border-color: var(--text); }
-.theme-option.is-active { border-color: var(--green-text); box-shadow: inset 0 0 0 1px var(--green-text); }
-.theme-option:focus-visible { outline: 3px solid rgba(36, 99, 23, 0.4); outline-offset: 2px; }
-.theme-option:disabled { cursor: wait; }
-/* Miniatura de tela com as cores de cada tema (fixas, independem do tema atual) */
-.theme-option__preview {
-  display: flex; flex-direction: column; gap: 8px; padding: 12px; height: 96px; border-radius: 10px;
+.theme-switch.is-on .theme-switch__track { background: var(--green); border-color: var(--green); color: rgba(255, 255, 255, 0.75); }
+.theme-switch__knob {
+  position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%;
+  display: grid; place-items: center; background: #fff; color: #b45309; border: 1px solid rgba(22, 25, 37, 0.12);
+  transition: transform .35s var(--ease-spring), color .3s, width .2s;
 }
-.theme-option--light .theme-option__preview { background: #edf2fd; border: 1px solid #e3e6ef; }
-.theme-option--dark .theme-option__preview { background: #111318; border: 1px solid #2c313b; }
-.theme-option__bar { height: 10px; width: 45%; border-radius: 5px; }
-.theme-option__line { height: 8px; width: 85%; border-radius: 4px; }
-.theme-option__line--short { width: 60%; }
-.theme-option__chip { margin-top: auto; height: 14px; width: 38%; border-radius: 7px; background: #246317; }
-.theme-option--light .theme-option__bar { background: #161925; }
-.theme-option--light .theme-option__line { background: #c9cedb; }
-.theme-option--dark .theme-option__bar { background: #e9ebf1; }
-.theme-option--dark .theme-option__line { background: #3a404c; }
-.theme-option--dark .theme-option__chip { background: #2f8a20; }
-.theme-option__body { display: flex; flex-direction: column; gap: 4px; }
-.theme-option__title { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 15px; }
-.theme-option__desc { font-size: 13px; color: var(--gray); line-height: 1.4; }
-.theme-option__check { position: absolute; top: 10px; right: 10px; color: var(--green-text); background: var(--bg); border-radius: 50%; }
+.theme-switch.is-on .theme-switch__knob { transform: translateX(28px); color: var(--green); }
+.theme-switch:hover .theme-switch__track { border-color: var(--green); }
+.theme-switch:active .theme-switch__knob { width: 28px; }
+.theme-switch.is-on:active .theme-switch__knob { transform: translateX(24px); }
 
 /* ---------- Ajuda ---------- */
 .help { gap: 16px; font-size: 14px; line-height: 1.5; }
@@ -774,7 +764,7 @@ legend { padding: 0; }
 .side-nav { display: none; }
 .logo--md { width: 150px; }
 
-/* ---------- Tema escuro (Perfil > Preferências) ---------- */
+/* ---------- Tema escuro (chave no Perfil) ---------- */
 :root[data-theme='dark'] {
   color-scheme: dark;
   --green: #2f8a20;        /* fundo de botões e seleções (texto branco por cima) */
@@ -1018,7 +1008,7 @@ legend { padding: 0; }
 .cards > :nth-child(n + 13) { animation-delay: 700ms; }
 
 /* Cartões e painéis: sobem levemente ao passar o mouse */
-.card--link, .summary__item, .theme-option {
+.card--link, .summary__item {
   transition: transform .25s var(--ease-out-soft), box-shadow .25s ease, border-color .2s ease;
 }
 .card--link:hover { transform: translateY(-3px); box-shadow: 0 12px 28px rgba(22, 25, 37, 0.12); }
@@ -1028,7 +1018,6 @@ legend { padding: 0; }
 .pcard.card--link:hover { border-color: var(--line); border-left-color: var(--st-wait); }
 .pcard--mine.card--link:hover { border-left-color: var(--st-mine); }
 .pcard--done.card--link:hover { border-left-color: var(--st-done); }
-.theme-option:hover:not(:disabled) { transform: translateY(-2px); }
 
 /* Barra de progresso enche e os ícones das funções aparecem um a um */
 .progress__fill { transform-origin: left center; animation: var(--animate-grow-x); animation-delay: 250ms; }
@@ -1112,7 +1101,6 @@ legend { padding: 0; }
 .menu a:hover, .menu button:hover { padding-left: 8px; }
 .avatar-btn .avatar { transition: transform .3s var(--ease-spring); }
 .avatar-btn:hover:not(:disabled) .avatar { transform: scale(1.05); }
-.theme-option__check { animation: var(--animate-pop); }
 
 /* Etapas do novo paciente */
 .stepper__dot--on { animation: var(--animate-pop); }
