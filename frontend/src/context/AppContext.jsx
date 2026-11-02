@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { api, setUnauthorizedHandler, tokenStore } from '../api.js';
 import { markIntroSeen } from '../utils/intro.js';
-import { applyTheme, storedTheme } from '../utils/theme.js';
+import { applyTheme, onDeviceThemeChange, storedTheme } from '../utils/theme.js';
 
 const AppContext = createContext(null);
 
@@ -10,15 +10,26 @@ export function AppProvider({ children }) {
   const [loading, setLoading] = useState(!!tokenStore.get());
   const [meta, setMeta] = useState(null); // { roles, axes, forms }
   const [toast, setToast] = useState(null);
+  // themePref: o que o usuário escolheu ('light' | 'dark' | 'system'); theme: o que aparece na tela
+  const [themePref, setThemePref] = useState(() => storedTheme() || 'light');
   const [theme, setThemeState] = useState(() => applyTheme(storedTheme() || 'light'));
   const toastTimer = useRef();
+
+  /** Aplica uma preferência de tema e guarda os dois estados. */
+  const applyPref = useCallback((pref) => {
+    setThemePref(pref);
+    setThemeState(applyTheme(pref));
+  }, []);
+
+  // Seguindo o dispositivo: quando o celular/computador troca de tema, o app acompanha na hora
+  useEffect(() => (themePref === 'system' ? onDeviceThemeChange(() => setThemeState(applyTheme('system'))) : undefined), [themePref]);
 
   /** Atualiza o usuário e aplica o tema salvo na conta dele. */
   const setUser = useCallback((u) => {
     setUserState(u);
     const t = u?.preferences?.theme;
-    if (t) setThemeState(applyTheme(t));
-  }, []);
+    if (t) applyPref(t);
+  }, [applyPref]);
 
   const logout = useCallback(() => {
     tokenStore.clear();
@@ -50,28 +61,28 @@ export function AppProvider({ children }) {
   }, []);
 
   /**
-   * Troca o tema: aplica na hora, lembra no navegador e salva na conta.
+   * Troca a preferência de tema ('light' | 'dark' | 'system'): aplica na hora, lembra no navegador e salva na conta.
    * Se não conseguir salvar na conta, volta ao tema anterior.
    */
   const setTheme = useCallback(async (next) => {
-    const previous = theme;
-    setThemeState(applyTheme(next));
+    const previous = themePref;
+    applyPref(next);
     if (!tokenStore.get()) return true;
     try {
       const { user: u } = await api.updatePreferences({ theme: next });
       setUserState(u);
       return true;
     } catch {
-      setThemeState(applyTheme(previous));
+      applyPref(previous);
       return false;
     }
-  }, [theme]);
+  }, [themePref, applyPref]);
 
   const value = useMemo(
     () => ({
-      user, setUser, loading, signIn, logout, meta, toast, notify, closeToast: () => setToast(null), theme, setTheme,
+      user, setUser, loading, signIn, logout, meta, toast, notify, closeToast: () => setToast(null), theme, themePref, setTheme,
     }),
-    [user, setUser, loading, signIn, logout, meta, toast, notify, theme, setTheme],
+    [user, setUser, loading, signIn, logout, meta, toast, notify, theme, themePref, setTheme],
   );
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }

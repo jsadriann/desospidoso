@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../api.js';
 import { useApp } from '../context/AppContext.jsx';
 import { Avatar, BottomNav, ConfirmModal, Screen, ThemeSwitch } from '../components/ui.jsx';
-import { IconCamera, IconChevronRight, IconLogout, IconTrash, IconUser } from '../components/Icons.jsx';
+import { IconCamera, IconChevronRight, IconLogout, IconSettings, IconTrash, IconUser } from '../components/Icons.jsx';
 import { resizeImage } from '../utils/format.js';
 
 export default function Profile() {
@@ -97,6 +97,7 @@ export default function Profile() {
       </div>
       <ul className="menu">
         <li><Link to="/perfil/dados" title="Ver e editar nome, e-mail, senha, função e foto"><IconUser /> <span>Dados pessoais</span> <IconChevronRight /></Link></li>
+        <li><Link to="/perfil/preferencias" title="Usar o tema do dispositivo e outras opções"><IconSettings /> <span>Preferências</span> <IconChevronRight /></Link></li>
         <li><button title="Sair da sua conta neste dispositivo" onClick={() => setModal('logout')}><IconLogout /> <span>Sair</span> <IconChevronRight /></button></li>
       </ul>
       <ul className="menu menu--spaced">

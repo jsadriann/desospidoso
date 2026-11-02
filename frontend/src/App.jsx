@@ -18,6 +18,7 @@ import Records from './pages/Records.jsx';
 import RecordDetails from './pages/RecordDetails.jsx';
 import Profile from './pages/Profile.jsx';
 import PersonalData from './pages/PersonalData.jsx';
+import Preferences from './pages/Preferences.jsx';
 
 function RequireAuth() {
   const { user, loading } = useApp();
@@ -80,8 +81,7 @@ export default function App() {
             <Route path="/perfil" element={<Profile />} />
             <Route path="/perfil/dados" element={<PersonalData />} />
             <Route path="/perfil/dados/editar" element={<PersonalData editing />} />
-            {/* O tema agora é trocado direto no Perfil; o endereço antigo leva para lá */}
-            <Route path="/perfil/preferencias" element={<Navigate to="/perfil" replace />} />
+            <Route path="/perfil/preferencias" element={<Preferences />} />
           </Route>
         </Route>
 

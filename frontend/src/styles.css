@@ -730,26 +730,44 @@ legend { padding: 0; }
 }
 .menu span { flex: 1; }
 
-/* ---------- Chave do tema claro/escuro (Perfil) ---------- */
-.profile-head__theme { margin-left: auto; align-self: flex-start; padding-top: 6px; }
-.theme-switch { border: 0; background: none; padding: 4px; border-radius: 999px; cursor: pointer; flex-shrink: 0; }
-.theme-switch:focus-visible { outline: 3px solid rgba(36, 99, 23, 0.4); outline-offset: 2px; }
-.theme-switch__track {
+/* ---------- Preferências ---------- */
+.pref-row {
+  display: flex; align-items: flex-start; gap: 16px; padding: 16px 18px; border-radius: var(--radius-lg);
+  background: var(--panel); border: 1px solid var(--border); box-shadow: var(--shadow);
+}
+.pref-row__text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.pref-row__title { font-size: 15px; font-weight: 700; }
+.pref-row__desc { font-size: 13.5px; line-height: 1.5; color: var(--text-soft); }
+.pref-row__status { font-size: 13px; color: var(--green-text); }
+
+/* ---------- Chaves liga/desliga (tema no Perfil, opções em Preferências) ---------- */
+.profile-head__theme { margin-left: auto; align-self: flex-start; padding-top: 2px; }
+.switch { --w: 52px; --h: 30px; --k: 22px; border: 0; background: none; padding: 4px; border-radius: 999px; cursor: pointer; flex-shrink: 0; }
+.switch:focus-visible { outline: 3px solid rgba(36, 99, 23, 0.4); outline-offset: 2px; }
+.switch__track {
   position: relative; display: flex; align-items: center; justify-content: space-between;
-  width: 60px; height: 32px; padding: 0 9px; border-radius: 999px;
+  width: var(--w); height: var(--h); padding: 0 calc((var(--h) - var(--k)) / 2 + 6px); border-radius: 999px;
   background: var(--hover); border: 1px solid var(--toggle-border); color: var(--gray);
   transition: background-color .3s ease, border-color .3s ease;
 }
-.theme-switch.is-on .theme-switch__track { background: var(--green); border-color: var(--green); color: rgba(255, 255, 255, 0.75); }
-.theme-switch__knob {
-  position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%;
-  display: grid; place-items: center; background: #fff; color: #b45309; border: 1px solid rgba(22, 25, 37, 0.12);
+.switch.is-on .switch__track { background: var(--green); border-color: var(--green); color: rgba(255, 255, 255, 0.75); }
+.switch__icon { display: grid; place-items: center; }
+.switch__knob {
+  position: absolute; top: calc((var(--h) - 2px - var(--k)) / 2); left: calc((var(--h) - 2px - var(--k)) / 2);
+  width: var(--k); height: var(--k); border-radius: 50%;
+  display: grid; place-items: center; background: #fff; color: var(--gray); border: 1px solid rgba(22, 25, 37, 0.12);
   transition: transform .35s var(--ease-spring), color .3s, width .2s;
 }
-.theme-switch.is-on .theme-switch__knob { transform: translateX(28px); color: var(--green); }
-.theme-switch:hover .theme-switch__track { border-color: var(--green); }
-.theme-switch:active .theme-switch__knob { width: 28px; }
-.theme-switch.is-on:active .theme-switch__knob { transform: translateX(24px); }
+.switch.is-on .switch__knob { transform: translateX(calc(var(--w) - var(--h))); color: var(--green); }
+.switch:hover:not(:disabled) .switch__track { border-color: var(--green); }
+.switch:disabled { cursor: not-allowed; }
+.switch:disabled .switch__track { opacity: .55; }
+/* Chave do tema (Perfil): maior e com sol/lua */
+.switch--theme { --w: 80px; --h: 42px; --k: 34px; }
+.switch--theme .switch__knob { color: #b45309; }
+.switch--theme.is-on .switch__knob { color: var(--green); }
+.theme-switch { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.theme-switch__auto { font-size: 11.5px; font-weight: 600; color: var(--gray); }
 
 /* ---------- Ajuda ---------- */
 .help { gap: 16px; font-size: 14px; line-height: 1.5; }

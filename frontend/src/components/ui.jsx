@@ -365,36 +365,62 @@ export function BottomNav() {
 }
 
 /**
- * Chave liga/desliga do tema escuro (Perfil). A bolinha vai para a direita no escuro.
- * A escolha é aplicada na hora e salva na conta do usuário.
+ * Chave liga/desliga (barra com bolinha). checked: ligada; icons: { off, on } aparecem na barra e na bolinha.
  */
-export function ThemeSwitch() {
-  const { theme, setTheme, notify } = useApp();
-  const [busy, setBusy] = useState(false);
-  const dark = theme === 'dark';
-  const toggle = async () => {
-    if (busy) return;
-    setBusy(true);
-    const ok = await setTheme(dark ? 'light' : 'dark');
-    setBusy(false);
-    if (!ok) notify('error', 'Não foi possível salvar o tema. Tente novamente.');
-  };
+export function Switch({ checked, onChange, disabled = false, label, title, icons, className = '' }) {
   return (
     <button
       type="button"
       role="switch"
-      aria-checked={dark}
-      aria-label="Tema escuro"
-      title={dark ? 'Tema escuro ligado (clique para usar o claro)' : 'Tema claro ligado (clique para usar o escuro)'}
-      className={`theme-switch ${dark ? 'is-on' : ''}`}
-      onClick={toggle}
+      aria-checked={checked}
+      aria-label={label}
+      title={title}
+      disabled={disabled}
+      className={`switch ${checked ? 'is-on' : ''} ${className}`}
+      onClick={() => !disabled && onChange?.(!checked)}
     >
-      <span className="theme-switch__track">
-        <IconSun size={14} className="theme-switch__sun" />
-        <IconMoon size={14} className="theme-switch__moon" />
-        <span className="theme-switch__knob">{dark ? <IconMoon size={14} /> : <IconSun size={14} />}</span>
+      <span className="switch__track">
+        {icons && <span className="switch__icon">{icons.off}</span>}
+        {icons && <span className="switch__icon">{icons.on}</span>}
+        <span className="switch__knob">{icons ? (checked ? icons.on : icons.off) : null}</span>
       </span>
     </button>
+  );
+}
+
+/**
+ * Chave do tema escuro (Perfil). A bolinha vai para a direita no escuro.
+ * Se o usuário escolheu seguir o tema do dispositivo (Perfil > Preferências), a chave fica desabilitada,
+ * mostrando o tema em uso, e só volta a funcionar quando essa opção for desativada.
+ */
+export function ThemeSwitch() {
+  const { theme, themePref, setTheme, notify } = useApp();
+  const [busy, setBusy] = useState(false);
+  const dark = theme === 'dark';
+  const auto = themePref === 'system';
+  const toggle = async (on) => {
+    if (busy) return;
+    setBusy(true);
+    const ok = await setTheme(on ? 'dark' : 'light');
+    setBusy(false);
+    if (!ok) notify('error', 'Não foi possível salvar o tema. Tente novamente.');
+  };
+  const title = auto
+    ? `Seguindo o tema do dispositivo (agora: ${dark ? 'escuro' : 'claro'}). Para trocar aqui, desative essa opção em Preferências.`
+    : dark ? 'Tema escuro ligado (clique para usar o claro)' : 'Tema claro ligado (clique para usar o escuro)';
+  return (
+    <div className="theme-switch">
+      <Switch
+        checked={dark}
+        onChange={toggle}
+        disabled={auto}
+        label="Tema escuro"
+        title={title}
+        className="switch--theme"
+        icons={{ off: <IconSun size={18} />, on: <IconMoon size={18} /> }}
+      />
+      {auto && <span className="theme-switch__auto" title={title}>Automático</span>}
+    </div>
   );
 }
 

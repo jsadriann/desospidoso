@@ -75,8 +75,9 @@ router.delete('/avatar', ah(async (req, res) => {
   res.json({ user: publicUser(await findUserById(req.user.id)) });
 }));
 
-// PUT /api/me/preferences  { theme: 'light' | 'dark' }  -> Perfil > Preferências
-const THEMES = ['light', 'dark'];
+// PUT /api/me/preferences  { theme: 'light' | 'dark' | 'system' }
+// 'system' = seguir o tema do dispositivo (Perfil > Preferências)
+const THEMES = ['light', 'dark', 'system'];
 router.put('/preferences', ah(async (req, res) => {
   const { theme } = req.body || {};
   if (!THEMES.includes(theme)) return res.status(400).json({ error: 'Tema inválido.' });

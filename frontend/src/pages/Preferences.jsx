@@ -1,26 +1,23 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext.jsx';
-import { Screen, SectionTitle, TopBar } from '../components/ui.jsx';
-import { IconCheckCircle, IconMoon, IconSun } from '../components/Icons.jsx';
+import { Screen, SectionTitle, Switch, TopBar } from '../components/ui.jsx';
 
-const THEME_OPTIONS = [
-  { value: 'light', label: 'Claro', description: 'Fundo claro, ideal para ambientes iluminados.', icon: <IconSun size={26} /> },
-  { value: 'dark', label: 'Escuro', description: 'Fundo escuro, mais confortável à noite e com pouca luz.', icon: <IconMoon size={26} /> },
-];
-
-// Perfil > Preferências. A escolha é aplicada na hora e salva na conta do usuário.
+// Perfil > Preferências. "Usar o tema do dispositivo": o app acompanha o tema claro/escuro do celular ou
+// computador. Enquanto estiver ativa, a chave de tema do Perfil fica desabilitada. A escolha é salva na conta.
 export default function Preferences() {
   const navigate = useNavigate();
-  const { theme, setTheme, notify } = useApp();
+  const { theme, themePref, setTheme, notify } = useApp();
   const [saving, setSaving] = useState(false);
+  const followDevice = themePref === 'system';
 
-  const choose = async (value) => {
-    if (value === theme || saving) return;
+  const change = async (on) => {
+    if (saving) return;
     setSaving(true);
-    const ok = await setTheme(value);
+    // Ao desativar, o app continua no tema que está na tela; depois é só usar a chave do Perfil.
+    const ok = await setTheme(on ? 'system' : theme);
     setSaving(false);
-    notify(ok ? 'success' : 'error', ok ? 'Preferência salva' : undefined);
+    notify(ok ? 'success' : 'error', ok ? 'Preferência salva' : 'Não foi possível salvar a preferência. Tente novamente.');
   };
 
   return (
@@ -28,36 +25,24 @@ export default function Preferences() {
       <TopBar title="Preferências" onBack={() => navigate('/perfil')} backTitle="Voltar para o perfil" />
 
       <SectionTitle>Aparência</SectionTitle>
-      <p className="small muted">Tema</p>
-
-      <div className="theme-options" role="radiogroup" aria-label="Tema">
-        {THEME_OPTIONS.map((o) => {
-          const active = theme === o.value;
-          return (
-            <button
-              key={o.value}
-              type="button"
-              role="radio"
-              aria-checked={active}
-              className={`theme-option theme-option--${o.value} ${active ? 'is-active' : ''}`}
-              title={`Usar o tema ${o.label.toLowerCase()}`}
-              disabled={saving}
-              onClick={() => choose(o.value)}
-            >
-              <span className="theme-option__preview" aria-hidden="true">
-                <span className="theme-option__bar" />
-                <span className="theme-option__line" />
-                <span className="theme-option__line theme-option__line--short" />
-                <span className="theme-option__chip" />
-              </span>
-              <span className="theme-option__body">
-                <span className="theme-option__title">{o.icon}{o.label}</span>
-                <span className="theme-option__desc">{o.description}</span>
-              </span>
-              {active && <IconCheckCircle size={22} className="theme-option__check" />}
-            </button>
-          );
-        })}
+      <div className="pref-row">
+        <div className="pref-row__text">
+          <p className="pref-row__title">Usar o tema do dispositivo</p>
+          <p className="pref-row__desc">
+            O tema claro ou escuro acompanha a configuração do seu celular ou computador. Enquanto esta opção estiver
+            ativa, a troca de tema no Perfil fica desabilitada.
+          </p>
+          {followDevice && (
+            <p className="pref-row__status">Tema atual do dispositivo: <strong>{theme === 'dark' ? 'escuro' : 'claro'}</strong></p>
+          )}
+        </div>
+        <Switch
+          checked={followDevice}
+          onChange={change}
+          disabled={saving}
+          label="Usar o tema do dispositivo"
+          title={followDevice ? 'Desativar: escolher o tema manualmente no Perfil' : 'Ativar: seguir o tema do dispositivo'}
+        />
       </div>
     </Screen>
   );

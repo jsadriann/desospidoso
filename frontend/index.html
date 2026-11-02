@@ -14,6 +14,7 @@
       // Aplica o tema salvo antes de desenhar a página (evita piscar no tema errado)
       try {
         var t = localStorage.getItem('desospidoso.theme');
+        if (t === 'system') t = window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
         if (t === 'dark' || t === 'light') document.documentElement.dataset.theme = t;
       } catch (e) {}
     </script>
