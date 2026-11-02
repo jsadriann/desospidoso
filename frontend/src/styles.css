@@ -103,6 +103,10 @@ html { line-height: normal; }
   --st-wait-bg: #e6effc;
   --st-done: #246317;
   --st-done-bg: #e3f1de;
+  /* Quadros do resumo: um tom mais forte que as etiquetas, para destacar do fundo azulado da página */
+  --st-mine-tile: #ffe6c7;
+  --st-wait-tile: #d3e3fd;
+  --st-done-tile: #d7ecd0;
   --panel: #ffffff;
   --panel-head: #eef3ec;
   --shadow: 0 1px 2px rgba(22, 25, 37, 0.06), 0 2px 8px rgba(22, 25, 37, 0.05);
@@ -531,9 +535,11 @@ legend { padding: 0; }
 }
 .summary__item:hover { transform: translateY(-1px); }
 .summary__item:focus-visible { outline: 3px solid rgba(36, 99, 23, 0.4); outline-offset: 2px; }
-.summary__item--mine { background: var(--st-mine-bg); color: var(--st-mine); }
-.summary__item--wait { background: var(--st-wait-bg); color: var(--st-wait); }
-.summary__item--done { background: var(--st-done-bg); color: var(--st-done); }
+.summary__item--mine { background: var(--st-mine-tile); color: var(--st-mine); }
+.summary__item--wait { background: var(--st-wait-tile); color: var(--st-wait); }
+.summary__item--done { background: var(--st-done-tile); color: var(--st-done); }
+/* Borda fina na cor do status (fica mais forte quando o quadro está selecionado) */
+.summary__item:not(.is-active) { border-color: color-mix(in srgb, currentColor 22%, transparent); }
 .summary__item.is-active { border-color: currentColor; }
 .summary__num { font-size: 26px; font-weight: 800; line-height: 1.1; font-variant-numeric: tabular-nums; }
 .summary__label { font-size: 12.5px; font-weight: 600; line-height: 1.25; }
@@ -747,6 +753,9 @@ legend { padding: 0; }
   --st-wait-bg: #1b2a45;
   --st-done: #7fd168;
   --st-done-bg: #1c3317;
+  --st-mine-tile: #3a2a12;
+  --st-wait-tile: #1b2a45;
+  --st-done-tile: #1c3317;
   --panel: #20242c;
   --panel-head: #262d29;
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
