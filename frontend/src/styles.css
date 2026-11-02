@@ -502,6 +502,19 @@ legend { padding: 0; }
 @keyframes drawer-rise { from { opacity: 0; transform: translateY(80px) scale(.98); } }
 @keyframes drawer-sink { to { opacity: 0; transform: translateY(60px) scale(.98); } }
 
+/* Botão "Restaurar" da lixeira: sempre visível (cartões e detalhes) */
+.pcard__fill--static { opacity: 1; transform: none; pointer-events: auto; }
+.pcard-wrap:hover .pcard__fill--static { transform: translateY(-3px); }
+.trash-banner {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 14px 16px; border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--red) 8%, var(--panel)); border: 1px solid color-mix(in srgb, var(--red) 30%, transparent);
+  font-size: 13.5px; line-height: 1.45;
+}
+.trash-banner__icon { color: var(--red); flex-shrink: 0; }
+.trash-banner p { flex: 1 1 220px; }
+.trash-banner__btn { position: static; flex-shrink: 0; }
+.trash-banner__btn:hover { transform: translateY(-2px); }
+
 /* Cartão de ficha completa */
 .rcard__tags { display: flex; flex-wrap: wrap; gap: 6px; }
 .rcard__tag {

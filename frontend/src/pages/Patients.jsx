@@ -3,10 +3,10 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '../api.js';
 import { useApp } from '../context/AppContext.jsx';
 import { useAsync, useCountUp, useDebounced } from '../hooks.js';
-import { BottomNav, ErrorText, InfoBanner, Loading, Screen, SearchField, Tabs } from '../components/ui.jsx';
+import { BottomNav, ConfirmModal, ErrorText, InfoBanner, Loading, Screen, SearchField, Tabs } from '../components/ui.jsx';
 import { PatientCard, STATUS } from '../components/patient.jsx';
 import FillDrawer from '../components/FillDrawer.jsx';
-import { IconHelp, IconPlus, IconTrash } from '../components/Icons.jsx';
+import { IconHelp, IconPlus, IconRestore, IconTrash } from '../components/Icons.jsx';
 
 const EMPTY = {
   todos: 'Nenhum paciente adicionado. Clique em + Novo para criar um novo registro de paciente.',
@@ -29,7 +29,7 @@ function CountUp({ value }) {
 
 export default function Patients() {
   const navigate = useNavigate();
-  const { meta } = useApp();
+  const { meta, notify } = useApp();
   const [params, setParams] = useSearchParams();
   const tab = ['todos', 'recentes', 'lixeira'].includes(params.get('aba')) ? params.get('aba') : 'todos';
   const [query, setQuery] = useState('');
@@ -39,6 +39,22 @@ export default function Patients() {
   const q = useDebounced(query);
   const { data, loading, error, reload } = useAsync(() => api.patients(tab, q), [tab, q]);
   const [filling, setFilling] = useState(null); // id do paciente com o formulário aberto por cima
+  const [restoring, setRestoring] = useState(null); // paciente da lixeira aguardando confirmação
+  const [busy, setBusy] = useState(false);
+
+  const restore = async () => {
+    setBusy(true);
+    try {
+      await api.restorePatient(restoring.id);
+      notify('success', `${restoring.fullName} voltou para a lista de pacientes`);
+      setRestoring(null);
+      reload();
+    } catch {
+      notify('error');
+    } finally {
+      setBusy(false);
+    }
+  };
   const all = data?.patients || [];
 
   // Resumo: quantos arquivos há em cada status (respeitando o filtro de eixo)
@@ -129,7 +145,9 @@ export default function Patients() {
           <p className="empty">Nenhum paciente com esses filtros.</p>
         )}
         <div className="cards">
-          {patients.map((p) => <PatientCard key={p.id} patient={p} to={`/pacientes/${p.id}`} onFill={() => setFilling(p.id)} />)}
+          {patients.map((p) => (
+            <PatientCard key={p.id} patient={p} to={`/pacientes/${p.id}`} onFill={() => setFilling(p.id)} onRestore={setRestoring} />
+          ))}
         </div>
       </div>
       <button className="fab" aria-label="Novo paciente" title="Criar um novo arquivo de paciente" onClick={() => navigate('/pacientes/novo')}>
@@ -137,6 +155,12 @@ export default function Patients() {
       </button>
       <BottomNav />
       {filling && <FillDrawer patientId={filling} onClose={() => setFilling(null)} onSaved={reload} />}
+      {restoring && (
+        <ConfirmModal title="Restaurar" icon={<IconRestore size={22} />} confirmLabel="Sim, restaurar" loading={busy} onConfirm={restore} onClose={() => setRestoring(null)}>
+          Ao confirmar, o arquivo de <strong>{restoring.fullName}</strong> será restaurado, voltando a estar disponível na
+          lista de arquivos e na opção da ficha completa.
+        </ConfirmModal>
+      )}
     </Screen>
   );
 }

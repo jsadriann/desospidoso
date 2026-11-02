@@ -22,6 +22,8 @@ export default function PatientDetails() {
   if (error) return <Screen narrow><TopBar title="Detalhes" /><ErrorText>{error.message}</ErrorText></Screen>;
   const p = data.patient;
   const trashed = !!p.deletedAt;
+  // A lixeira é esvaziada 30 dias após a exclusão
+  const daysLeft = trashed ? Math.ceil((new Date(p.deletedAt).getTime() + 30 * 86_400_000 - Date.now()) / 86_400_000) : 0;
 
   const act = async () => {
     setBusy(true);
@@ -44,12 +46,26 @@ export default function PatientDetails() {
         title="Detalhes"
         onBack={() => navigate('/pacientes')}
         backTitle="Voltar para a lista de pacientes"
-        right={trashed ? (
-          <button className="icon-btn icon-btn--ring" aria-label="Restaurar" title="Restaurar este arquivo da lixeira" onClick={() => setModal('restore')}><IconRestore /></button>
-        ) : (
+        right={trashed ? null : (
           <button className="icon-btn icon-btn--ring" aria-label="Excluir" title="Mover este arquivo para a lixeira" onClick={() => setModal('delete')}><IconTrash /></button>
         )}
       />
+
+      {trashed && (
+        <div className="trash-banner" role="status">
+          <IconTrash size={22} className="trash-banner__icon" />
+          <p>
+            <strong>Este arquivo está na lixeira.</strong>{' '}
+            {daysLeft > 0
+              ? `Ele será excluído definitivamente em ${daysLeft} ${daysLeft === 1 ? 'dia' : 'dias'}, se não for restaurado.`
+              : 'Ele será excluído definitivamente em breve, se não for restaurado.'}
+          </p>
+          <button type="button" className="pcard__fill pcard__fill--static trash-banner__btn" title="Restaurar este arquivo da lixeira" onClick={() => setModal('restore')}>
+            <IconRestore size={15} strokeWidth={2.2} />
+            Restaurar
+          </button>
+        </div>
+      )}
 
       {/* Resumo: situação do arquivo e quais funções ainda faltam */}
       <section className="panel panel--summary" aria-label="Resumo do arquivo">

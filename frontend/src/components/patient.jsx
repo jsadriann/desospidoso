@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { formatDate, lastActionLabel } from '../utils/format.js';
 import {
   IconBed, IconBuilding, IconCalendar, IconCheck, IconCheckCircle, IconChevronRight, IconDash, IconDoor, IconPencil,
+  IconRestore,
 } from './Icons.jsx';
 import { OptionCard, TextField } from './ui.jsx';
 
@@ -72,8 +73,9 @@ export function MissingRoles({ roles, compact = false }) {
  * Cartão da lista "Pacientes": status em cor, progresso, funções e última alteração.
  * Se a parte do usuário ainda falta, ao passar o mouse aparece o botão "Preencher" (no celular fica sempre
  * visível). onFill(patient) abre o formulário por cima da lista; sem onFill, abre a tela de preenchimento.
+ * Na lixeira, o cartão mostra sempre o botão "Restaurar" (onRestore).
  */
-export function PatientCard({ patient, to, onFill }) {
+export function PatientCard({ patient, to, onFill, onRestore }) {
   const navigate = useNavigate();
   const s = STATUS[patient.status] || STATUS.PENDENTE;
   const canFill = !patient.myRoleDone && !patient.deletedAt;
@@ -97,6 +99,17 @@ export function PatientCard({ patient, to, onFill }) {
           : <p className="missing missing--done">Todas as funções preencheram.</p>}
         <p className="card__foot">{lastActionLabel(patient.lastAction, patient.lastActionAt)}</p>
       </Link>
+      {patient.deletedAt && onRestore && (
+        <button
+          type="button"
+          className="pcard__fill pcard__fill--static"
+          title={`Restaurar o arquivo de ${patient.fullName} da lixeira`}
+          onClick={() => onRestore(patient)}
+        >
+          <IconRestore size={15} strokeWidth={2.2} />
+          Restaurar
+        </button>
+      )}
       {canFill && (
         <button
           type="button"
