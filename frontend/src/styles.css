@@ -113,7 +113,10 @@ html { line-height: normal; }
   --side-width: 264px;
   /* Altura da área visível. Em celulares, 100vh inclui a barra de endereço e gera scroll à toa;
      100dvh acompanha a área realmente visível. */
-  --vh: 100vh;
+  /* Tamanho do texto (Perfil > Preferências): a página inteira é ampliada por --zoom. A altura visível é
+     dividida pelo mesmo fator para não criar rolagem à toa. */
+  --zoom: 1;
+  --vh: calc(100vh / var(--zoom));
   font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
   font-feature-settings: 'cv11', 'ss01';
   color: var(--text);
@@ -122,8 +125,13 @@ html { line-height: normal; }
 }
 
 @supports (height: 100dvh) {
-  :root { --vh: 100dvh; }
+  :root { --vh: calc(100dvh / var(--zoom)); }
 }
+
+/* ---------- Tamanho do texto ---------- */
+:root[data-text='grande'] { --zoom: 1.125; }
+:root[data-text='muito-grande'] { --zoom: 1.25; }
+body { zoom: var(--zoom); }
 
 * { box-sizing: border-box; }
 html, body { margin: 0; min-height: 100%; }
@@ -731,13 +739,35 @@ legend { padding: 0; }
 .menu span { flex: 1; }
 
 /* ---------- Preferências ---------- */
-.pref-row {
-  display: flex; align-items: flex-start; gap: 16px; padding: 16px 18px; border-radius: var(--radius-lg);
-  background: var(--panel); border: 1px solid var(--border); box-shadow: var(--shadow);
+.pref-group {
+  background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow);
+  overflow: hidden;
 }
+.pref-row { display: flex; align-items: flex-start; gap: 16px; padding: 16px 18px; }
+.pref-row + .pref-row { border-top: 1px solid var(--border); }
+.pref-row--stacked { flex-direction: column; align-items: stretch; gap: 12px; }
 .pref-row__text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
 .pref-row__title { font-size: 15px; font-weight: 700; }
 .pref-row__desc { font-size: 13.5px; line-height: 1.5; color: var(--text-soft); }
+.pref-row__control { flex-shrink: 0; }
+/* Botões lado a lado (tamanho do texto) */
+.segmented { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.segmented__item {
+  display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 8px; border-radius: var(--radius);
+  border: 1px solid var(--line); background: var(--bg); color: var(--text); font-size: 13px; font-weight: 600; cursor: pointer;
+  transition: border-color .2s, background-color .2s;
+}
+.segmented__item:hover:not(.is-active):not(:disabled) { border-color: var(--text-soft); }
+.segmented__item.is-active { border-color: var(--green); box-shadow: inset 0 0 0 1px var(--green); background: color-mix(in srgb, var(--green) 7%, var(--bg)); color: var(--green-text); }
+.segmented__item:focus-visible { outline: 3px solid rgba(36, 99, 23, 0.4); outline-offset: 2px; }
+.segmented__item:disabled { cursor: wait; }
+.segmented__sample { font-weight: 700; line-height: 1.1; }
+.pref-select {
+  width: 100%; height: 44px; padding: 0 34px 0 12px; border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' stroke='%23858585' stroke-width='2'%3E%3Cpath d='M1 1l5 5 5-5'/%3E%3C/svg%3E") no-repeat right 12px center;
+  color: var(--text); font: inherit; font-size: 14px; appearance: none; cursor: pointer;
+}
+.pref-select:focus { outline: none; border-color: var(--green); box-shadow: 0 0 0 3px rgba(36, 99, 23, 0.18); }
 
 /* ---------- Chaves liga/desliga (tema no Perfil, opções em Preferências) ---------- */
 .profile-head__theme { margin-left: auto; align-self: flex-start; padding-top: 2px; }
@@ -812,6 +842,29 @@ legend { padding: 0; }
   --panel-head: #262d29;
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
+
+/* ---------- Alto contraste (Perfil > Preferências) ---------- */
+:root[data-contrast='high']:not([data-theme='dark']) {
+  --text: #000; --text-soft: #1c1c1c; --gray: #4a4a4a; --line: #5a5a5a; --border: #6e6e6e; --toggle-border: #5a5a5a;
+  --bg: #fff; --page: #eef1f6; --panel: #fff; --panel-head: #dfeadb; --hover: #e6e6e6;
+  --green: #1b4d11; --green-hover: #11380a; --green-text: #1b4d11; --red: #b00020; --navy: #161b66; --pending: #5a3d00;
+  --st-mine: #8a3c00; --st-mine-bg: #ffe0b8; --st-wait: #0b3d91; --st-wait-bg: #d3e2ff; --st-done: #1b4d11; --st-done-bg: #d0e9c8;
+  --st-mine-tile: #ffd7a3; --st-wait-tile: #c3d7fd; --st-done-tile: #c2e2b8;
+}
+:root[data-theme='dark'][data-contrast='high'] {
+  --text: #fff; --text-soft: #f2f2f2; --gray: #d2d2d2; --line: #bdbdbd; --border: #9a9a9a; --toggle-border: #bdbdbd;
+  --bg: #000; --page: #000; --panel: #0e0e0e; --panel-head: #17261a; --hover: #262626;
+  --green: #237a16; --green-hover: #2c9020; --green-text: #a6f08f; --red: #ff8a95; --navy: #3a43c4; --pending: #ffd36b;
+  --st-mine: #ffc46b; --st-mine-bg: #3d2600; --st-wait: #b3cfff; --st-wait-bg: #0d2147; --st-done: #a6f08f; --st-done-bg: #133012;
+  --st-mine-tile: #3d2600; --st-wait-tile: #0d2147; --st-done-tile: #133012;
+}
+:root[data-contrast='high'] a.link, :root[data-contrast='high'] .link-btn { text-decoration: underline; text-underline-offset: 2px; }
+:root[data-contrast='high'] :focus-visible { outline: 3px solid var(--text) !important; outline-offset: 3px; }
+:root[data-contrast='high'] .roles__item:not(.is-done) img { opacity: .6; }
+/* O fundo da barra fica claro com contorno, para 0/7 não parecer uma barra cheia */
+:root[data-contrast='high'] .progress__track { background: var(--hover); box-shadow: inset 0 0 0 1px var(--border); }
+:root[data-contrast='high'] .muted, :root[data-contrast='high'] .card__id, :root[data-contrast='high'] .card__foot { color: var(--text-soft); }
+:root[data-contrast='high'] .input::placeholder { color: var(--gray); }
 :root[data-theme='dark'] .input:focus { border-color: var(--text); box-shadow: 0 0 0 3px rgba(127, 209, 104, 0.18); }
 :root[data-theme='dark'] .btn:disabled { background: #3a404c; border-color: #3a404c; color: #8b92a0; }
 :root[data-theme='dark'] .toast--fail { background: #c4142a; }
@@ -1161,4 +1214,9 @@ html.theme-switching *, html.theme-switching *::before, html.theme-switching *::
   *, *::before, *::after { animation: none !important; transition: none !important; }
   .reveal { opacity: 1; transform: none; }
 }
+/* "Reduzir animações" em Perfil > Preferências: o mesmo efeito, escolhido no app */
+:root[data-motion='reduce'] *, :root[data-motion='reduce'] *::before, :root[data-motion='reduce'] *::after {
+  animation: none !important; transition: none !important;
+}
+:root[data-motion='reduce'] .reveal { opacity: 1; transform: none; }
 } /* fim @layer components */

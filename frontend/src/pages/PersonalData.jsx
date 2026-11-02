@@ -35,6 +35,7 @@ export default function PersonalData({ editing = false }) {
 }
 
 function EditPersonalData({ user, setUser, meta, notify, navigate }) {
+  const { prefs } = useApp();
   const fileRef = useRef();
   const [form, setForm] = useState({
     name: user.name, email: user.email, password: '', confirmPassword: '', role: user.role,
@@ -63,7 +64,8 @@ function EditPersonalData({ user, setUser, meta, notify, navigate }) {
     setError('');
     if (!form.name.trim() || !form.email.trim() || !form.role) return setError('Por favor, preencha todos os campos antes de continuar.');
     if (form.password !== form.confirmPassword) return setError('As senhas não coincidem.');
-    setConfirm(true);
+    // Perfil > Preferências: "Pedir confirmação antes de salvar"
+    if (prefs.confirmSave) setConfirm(true); else save();
   };
 
   const save = async () => {

@@ -160,9 +160,17 @@ enviar, a API confere se é mesmo PNG, JPG ou WEBP e guarda o arquivo no Object 
 referência, na tabela `user_avatars`, ligada ao usuário com `ON DELETE CASCADE`. Quando a conta é excluída (ou a foto
 é trocada ou removida), um gatilho do banco coloca o arquivo na fila `storage_deletions` e a API o apaga do bucket.
 
-No Perfil, a chave ao lado da foto troca entre o tema claro e o escuro. Em Perfil > Preferências, a opção "Usar o
-tema do dispositivo" faz o app acompanhar o tema do celular ou computador (a chave do Perfil fica desabilitada). A escolha fica salva na conta (coluna
-`theme` da tabela `users`), então vale em qualquer navegador até o usuário trocar de novo.
+No Perfil, a chave ao lado da foto troca entre o tema claro e o escuro. Em Perfil > Preferências ficam as demais
+opções, todas salvas na conta (tema na coluna `theme`, o resto na coluna `prefs`):
+
+- Usar o tema do dispositivo (a chave do Perfil fica desabilitada enquanto estiver ativa)
+- Tamanho do texto: normal, grande ou muito grande (a tela inteira é ampliada na mesma proporção)
+- Alto contraste
+- Reduzir animações
+- Filtro e ordem com que a lista de pacientes abre
+- Pedir confirmação antes de salvar (excluir, sair e remover sempre pedem)
+
+Como ficam na conta, as escolhas valem em qualquer navegador até o usuário trocar de novo.
 
 ### Questionários
 
@@ -183,7 +191,7 @@ As rotas, exceto `/api/auth/*`, `/api/forms` e `/api/health`, exigem o cabeçalh
 | GET, PUT, DELETE | `/api/me` | Ver, editar e excluir a própria conta |
 | PUT, DELETE | `/api/me/avatar` | Envia (`image`: data URL) ou remove a foto de perfil |
 | GET | `/api/avatars/:arquivo` | Imagem da foto de perfil |
-| PUT | `/api/me/preferences` | Salva as preferências (`theme`: light, dark ou system) |
+| PUT | `/api/me/preferences` | Salva as preferências (`theme`, `textSize`, `highContrast`, `reduceMotion`, `listStatus`, `listSort`, `confirmSave`) |
 | GET | `/api/forms` | Funções, eixos de internação e questionários |
 | GET | `/api/patients` | Lista de pacientes (`filter`: todos, recentes, lixeira; `q`: busca por nome ou ID) |
 | POST | `/api/patients` | Cria uma identificação |

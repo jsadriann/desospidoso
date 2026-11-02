@@ -11,11 +11,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <title>DesospIdoso</title>
     <script>
-      // Aplica o tema salvo antes de desenhar a página (evita piscar no tema errado)
+      // Aplica o tema e as preferências salvas antes de desenhar a página (evita piscar)
       try {
         var t = localStorage.getItem('desospidoso.theme');
         if (t === 'system') t = window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
         if (t === 'dark' || t === 'light') document.documentElement.dataset.theme = t;
+        // Tamanho do texto, alto contraste e animações (Perfil > Preferências)
+        var p = JSON.parse(localStorage.getItem('desospidoso.prefs') || '{}'), h = document.documentElement;
+        if (p.textSize === 'grande' || p.textSize === 'muito-grande') h.setAttribute('data-text', p.textSize);
+        if (p.highContrast) h.setAttribute('data-contrast', 'high');
+        if (p.reduceMotion) h.setAttribute('data-motion', 'reduce');
       } catch (e) {}
     </script>
   </head>

@@ -4,7 +4,7 @@ import { api } from '../api.js';
 import { useApp } from '../context/AppContext.jsx';
 import { useAsync, useCountUp, useDebounced } from '../hooks.js';
 import { BottomNav, ConfirmModal, ErrorText, InfoBanner, Loading, Screen, SearchField, Tabs } from '../components/ui.jsx';
-import { PatientCard, STATUS } from '../components/patient.jsx';
+import { LIST_SORTS as SORTS, PatientCard, STATUS } from '../components/patient.jsx';
 import FillDrawer from '../components/FillDrawer.jsx';
 import { IconCheckSquare, IconHelp, IconPlus, IconRestore, IconTrash } from '../components/Icons.jsx';
 
@@ -14,12 +14,6 @@ const EMPTY = {
   lixeira: 'Nenhum paciente excluído até o momento.',
 };
 
-const SORTS = {
-  recente: { label: 'Alteração mais recente', fn: (a, b) => b.lastActionAt.localeCompare(a.lastActionAt) },
-  antiga: { label: 'Alteração mais antiga', fn: (a, b) => a.lastActionAt.localeCompare(b.lastActionAt) },
-  nome: { label: 'Nome (A–Z)', fn: (a, b) => a.fullName.localeCompare(b.fullName, 'pt-BR') },
-  progresso: { label: 'Menos seções preenchidas', fn: (a, b) => a.sectionsDone - b.sectionsDone },
-};
 
 /** Número do resumo: conta de 0 até o valor quando a lista carrega ou muda. */
 function CountUp({ value }) {
@@ -29,13 +23,14 @@ function CountUp({ value }) {
 
 export default function Patients() {
   const navigate = useNavigate();
-  const { meta, notify } = useApp();
+  const { meta, notify, prefs } = useApp();
   const [params, setParams] = useSearchParams();
   const tab = ['todos', 'recentes', 'lixeira'].includes(params.get('aba')) ? params.get('aba') : 'todos';
   const [query, setQuery] = useState('');
-  const [status, setStatus] = useState(''); // '' = todos os status
+  // Filtro e ordem iniciais vêm de Perfil > Preferências
+  const [status, setStatus] = useState(() => prefs.listStatus || ''); // '' = todos os status
   const [axis, setAxis] = useState('');
-  const [sort, setSort] = useState('recente');
+  const [sort, setSort] = useState(() => (SORTS[prefs.listSort] ? prefs.listSort : 'recente'));
   const q = useDebounced(query);
   const { data, loading, error, reload } = useAsync(() => api.patients(tab, q), [tab, q]);
   const [filling, setFilling] = useState(null); // id do paciente com o formulário aberto por cima

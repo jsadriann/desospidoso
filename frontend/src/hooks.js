@@ -27,9 +27,12 @@ export function useAsync(fn, deps) {
   return { ...state, reload, setData: (data) => setState((s) => ({ ...s, data })) };
 }
 
-/** true se a pessoa pediu "reduzir movimento" no aparelho (aí as animações ficam desligadas). */
+/** true se as animações devem ficar desligadas: "reduzir movimento" no aparelho ou em Perfil > Preferências. */
 export const prefersReducedMotion = () => (
-  typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+  typeof window !== 'undefined' && (
+    document.documentElement.dataset.motion === 'reduce'
+    || Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)
+  )
 );
 
 /** Número que "conta" até o valor (resumo da lista de pacientes). */

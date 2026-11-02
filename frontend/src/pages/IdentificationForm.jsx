@@ -12,7 +12,7 @@ export default function IdentificationForm() {
   const { id } = useParams();
   const editing = !!id;
   const navigate = useNavigate();
-  const { meta, notify } = useApp();
+  const { meta, notify, prefs } = useApp();
   const [form, setForm] = useState(EMPTY);
   const [loaded, setLoaded] = useState(!editing);
   const [error, setError] = useState('');
@@ -31,7 +31,8 @@ export default function IdentificationForm() {
     e.preventDefault();
     setError('');
     if (Object.values(form).some((v) => !String(v).trim())) return setError('Por favor, preencha todos os campos antes de continuar.');
-    setConfirm(true);
+    // Perfil > Preferências: "Pedir confirmação antes de salvar"
+    if (prefs.confirmSave) setConfirm(true); else save();
   };
 
   const save = async () => {

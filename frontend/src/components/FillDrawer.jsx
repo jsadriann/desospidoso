@@ -13,7 +13,7 @@ import { ProfessionIcon, QuestionForm } from './patient.jsx';
  * A lista continua visível atrás. Ao salvar, o painel fecha e a lista é atualizada (onSaved).
  */
 export default function FillDrawer({ patientId, onClose, onSaved }) {
-  const { user, meta, notify } = useApp();
+  const { user, meta, notify, prefs } = useApp();
   const form = meta?.forms.find((f) => f.role === user.role);
   const [patient, setPatient] = useState(null);
   const [answers, setAnswers] = useState({});
@@ -113,7 +113,7 @@ export default function FillDrawer({ patientId, onClose, onSaved }) {
           {!patient || !form ? (
             error ? <ErrorText>{error}</ErrorText> : <Loading count={1} />
           ) : (
-            <form id="drawer-form" className="stack" onSubmit={(e) => { e.preventDefault(); setModal('save'); }} noValidate>
+            <form id="drawer-form" className="stack" onSubmit={(e) => { e.preventDefault(); if (prefs.confirmSave) setModal('save'); else save(); }} noValidate>
               <QuestionForm questions={form.questions} answers={answers} onChange={change} />
               <ErrorText>{error}</ErrorText>
               {details.length > 0 && <ul className="error-list">{details.map((d) => <li key={d}>{d}</li>)}</ul>}

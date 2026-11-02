@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { api, setUnauthorizedHandler, tokenStore } from '../api.js';
 import { markIntroSeen } from '../utils/intro.js';
 import { applyTheme, onDeviceThemeChange, storedTheme } from '../utils/theme.js';
+import { applyPrefs, storedPrefs } from '../utils/prefs.js';
 
 const AppContext = createContext(null);
 
@@ -14,6 +15,8 @@ export function AppProvider({ children }) {
   const [themePref, setThemePref] = useState(() => storedTheme() || 'light');
   const [theme, setThemeState] = useState(() => applyTheme(storedTheme() || 'light'));
   const toastTimer = useRef();
+  // Demais preferências: tamanho do texto, contraste, animações, lista de pacientes, confirmação ao salvar
+  const [prefs, setPrefsState] = useState(() => applyPrefs(storedPrefs()));
 
   /** Aplica uma preferência de tema e guarda os dois estados. */
   const applyPref = useCallback((pref) => {
@@ -29,6 +32,10 @@ export function AppProvider({ children }) {
     setUserState(u);
     const t = u?.preferences?.theme;
     if (t) applyPref(t);
+    if (u?.preferences) {
+      const { theme: _theme, ...rest } = u.preferences;
+      setPrefsState(applyPrefs(rest));
+    }
   }, [applyPref]);
 
   const logout = useCallback(() => {
@@ -78,11 +85,29 @@ export function AppProvider({ children }) {
     }
   }, [themePref, applyPref]);
 
+  /**
+   * Muda uma ou mais preferências ({ textSize: 'grande' }, { reduceMotion: true }...): aplica na hora,
+   * lembra no navegador e salva na conta. Se não conseguir salvar, volta ao que era.
+   */
+  const updatePrefs = useCallback(async (patch) => {
+    const previous = prefs;
+    setPrefsState(applyPrefs({ ...prefs, ...patch }));
+    if (!tokenStore.get()) return true;
+    try {
+      const { user: u } = await api.updatePreferences(patch);
+      setUserState(u);
+      return true;
+    } catch {
+      setPrefsState(applyPrefs(previous));
+      return false;
+    }
+  }, [prefs]);
+
   const value = useMemo(
     () => ({
-      user, setUser, loading, signIn, logout, meta, toast, notify, closeToast: () => setToast(null), theme, themePref, setTheme,
+      user, setUser, loading, signIn, logout, meta, toast, notify, closeToast: () => setToast(null), theme, themePref, setTheme, prefs, updatePrefs,
     }),
-    [user, setUser, loading, signIn, logout, meta, toast, notify, theme, themePref, setTheme],
+    [user, setUser, loading, signIn, logout, meta, toast, notify, theme, themePref, setTheme, prefs, updatePrefs],
   );
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }

@@ -13,7 +13,7 @@ export default function FillSection() {
   const navigate = useNavigate();
   // Veio do botão "Preencher" do cartão: sem a etapa 1, e ao salvar volta para a lista
   const fromList = useLocation().state?.from === 'lista';
-  const { user, meta, notify } = useApp();
+  const { user, meta, notify, prefs } = useApp();
   const [patient, setPatient] = useState(null);
   const [answers, setAnswers] = useState({});
   const [error, setError] = useState('');
@@ -67,7 +67,7 @@ export default function FillSection() {
         <h3>{form.title}</h3>
       </div>
 
-      <form id="section-form" className="stack" onSubmit={(e) => { e.preventDefault(); setConfirm(true); }} noValidate>
+      <form id="section-form" className="stack" onSubmit={(e) => { e.preventDefault(); if (prefs.confirmSave) setConfirm(true); else save(); }} noValidate>
         <QuestionForm questions={form.questions} answers={answers} onChange={setAnswers} />
         <ErrorText>{error}</ErrorText>
         {details.length > 0 && (

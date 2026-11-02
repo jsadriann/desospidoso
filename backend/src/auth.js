@@ -53,11 +53,28 @@ function avatarUrl(u) {
   return null;
 }
 
+// Preferências do usuário (Perfil > Preferências) e os valores aceitos para cada uma.
+export const PREFERENCE_OPTIONS = {
+  textSize: ['normal', 'grande', 'muito-grande'], // tamanho do texto
+  highContrast: [true, false], // alto contraste
+  reduceMotion: [true, false], // reduzir animações
+  confirmSave: [true, false], // pedir confirmação antes de salvar
+  listStatus: ['', 'PENDENTE_PARA_VOCE', 'PENDENTE', 'CONCLUIDO'], // filtro inicial da lista de pacientes
+  listSort: ['recente', 'antiga', 'nome', 'progresso'], // ordem inicial da lista de pacientes
+};
+export const PREFERENCE_DEFAULTS = {
+  textSize: 'normal', highContrast: false, reduceMotion: false, confirmSave: true, listStatus: '', listSort: 'recente',
+};
+
 export function publicUser(u) {
   if (!u) return null;
   return {
     id: u.id, name: u.name, email: u.email, role: u.role, avatar: avatarUrl(u), createdAt: u.created_at,
-    preferences: { theme: u.theme || 'light' },
+    preferences: {
+      ...PREFERENCE_DEFAULTS,
+      ...(typeof u.prefs === 'string' ? JSON.parse(u.prefs) : u.prefs || {}),
+      theme: u.theme || 'light',
+    },
   };
 }
 

@@ -76,6 +76,8 @@ export async function migrate() {
     CREATE UNIQUE INDEX IF NOT EXISTS users_email_unique ON users (lower(email));
     -- Preferências do usuário (Perfil > Preferências). Coluna adicionada depois: ALTER para bancos já existentes.
     ALTER TABLE users ADD COLUMN IF NOT EXISTS theme TEXT NOT NULL DEFAULT 'light';
+    -- Demais preferências (tamanho do texto, contraste, animações, lista, confirmação ao salvar)
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS prefs JSONB NOT NULL DEFAULT '{}'::jsonb;
 
     CREATE TABLE IF NOT EXISTS password_resets (
       id          SERIAL PRIMARY KEY,

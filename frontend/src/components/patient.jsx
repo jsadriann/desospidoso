@@ -21,6 +21,14 @@ export const STATUS = {
   },
 };
 
+/** Ordens da lista de pacientes (filtro "Ordenar por" e Perfil > Preferências). */
+export const LIST_SORTS = {
+  recente: { label: 'Alteração mais recente', fn: (a, b) => b.lastActionAt.localeCompare(a.lastActionAt) },
+  antiga: { label: 'Alteração mais antiga', fn: (a, b) => a.lastActionAt.localeCompare(b.lastActionAt) },
+  nome: { label: 'Nome (A–Z)', fn: (a, b) => a.fullName.localeCompare(b.fullName, 'pt-BR') },
+  progresso: { label: 'Menos seções preenchidas', fn: (a, b) => a.sectionsDone - b.sectionsDone },
+};
+
 /** Etiqueta colorida do status (laranja: falta a sua parte; azul: falta de outras funções; verde: concluído). */
 export function StatusTag({ status }) {
   const s = STATUS[status] || STATUS.PENDENTE;

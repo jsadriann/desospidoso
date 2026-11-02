@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import { ah, one, transaction } from '../db.js';
 import { ROLES } from '../forms.js';
-import { findUserById, hashPassword, passwordProblem, publicUser, requireAuth } from '../auth.js';
+import {
+  PREFERENCE_OPTIONS, findUserById, hashPassword, passwordProblem, publicUser, requireAuth,
+} from '../auth.js';
 import { deleteObject, parseImage, purgeSoon, uploadAvatar } from '../storage.js';
 
 const router = Router();
@@ -75,13 +77,23 @@ router.delete('/avatar', ah(async (req, res) => {
   res.json({ user: publicUser(await findUserById(req.user.id)) });
 }));
 
-// PUT /api/me/preferences  { theme: 'light' | 'dark' | 'system' }
-// 'system' = seguir o tema do dispositivo (Perfil > Preferências)
+// PUT /api/me/preferences  { theme?, textSize?, highContrast?, reduceMotion?, confirmSave?, listStatus?, listSort? }
+// Atualiza só o que vier no corpo. theme: 'light' | 'dark' | 'system' ('system' = seguir o tema do dispositivo).
 const THEMES = ['light', 'dark', 'system'];
 router.put('/preferences', ah(async (req, res) => {
-  const { theme } = req.body || {};
-  if (!THEMES.includes(theme)) return res.status(400).json({ error: 'Tema inválido.' });
-  await one('UPDATE users SET theme = $1, updated_at = now() WHERE id = $2', [theme, req.user.id]);
+  const body = req.body || {};
+  if ('theme' in body && !THEMES.includes(body.theme)) return res.status(400).json({ error: 'Tema inválido.' });
+  const patch = {};
+  for (const [key, allowed] of Object.entries(PREFERENCE_OPTIONS)) {
+    if (!(key in body)) continue;
+    if (!allowed.includes(body[key])) return res.status(400).json({ error: 'Preferência inválida.' });
+    patch[key] = body[key];
+  }
+  if (!('theme' in body) && !Object.keys(patch).length) return res.status(400).json({ error: 'Nenhuma preferência informada.' });
+  await one(
+    `UPDATE users SET theme = COALESCE($1, theme), prefs = prefs || $2::jsonb, updated_at = now() WHERE id = $3`,
+    [body.theme ?? null, JSON.stringify(patch), req.user.id],
+  );
   res.json({ user: publicUser(await findUserById(req.user.id)) });
 }));
 
