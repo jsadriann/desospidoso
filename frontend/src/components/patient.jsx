@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
 import { formatDate, lastActionLabel } from '../utils/format.js';
-import { IconCheck, IconCheckCircle, IconChevronRight, IconDash } from './Icons.jsx';
+import {
+  IconBed, IconBuilding, IconCalendar, IconCheck, IconCheckCircle, IconChevronRight, IconDash, IconDoor,
+} from './Icons.jsx';
 import { OptionCard, TextField } from './ui.jsx';
 
 export const STATUS = {
@@ -91,7 +93,73 @@ export function PatientCard({ patient, to }) {
   );
 }
 
-/** Cartão com dados da identificação (Fichas completas / Etapa 2 / seleção). */
+/** Idade em anos a partir de "AAAA-MM-DD". */
+export function ageFrom(birthDate) {
+  if (!birthDate) return null;
+  const [y, m, d] = birthDate.split('-').map(Number);
+  const now = new Date();
+  let age = now.getFullYear() - y;
+  if (now.getMonth() + 1 < m || (now.getMonth() + 1 === m && now.getDate() < d)) age -= 1;
+  return age;
+}
+
+/** Etiquetas do eixo de internação e da idade. */
+function IdentTags({ patient }) {
+  const age = ageFrom(patient.birthDate);
+  return (
+    <div className="rcard__tags">
+      <span className="rcard__tag" title="Eixo de internação">{patient.axisLabel}</span>
+      {age != null && <span className="rcard__tag" title="Idade">{age} anos</span>}
+    </div>
+  );
+}
+
+/** Nascimento, hospital, enfermaria e leito em grade, com ícone e rótulo. */
+function IdentInfo({ patient }) {
+  const info = [
+    { icon: <IconCalendar size={16} />, label: 'Nascimento', value: formatDate(patient.birthDate) },
+    { icon: <IconBuilding size={16} />, label: 'Hospital', value: patient.hospital },
+    { icon: <IconDoor size={16} />, label: 'Enfermaria', value: patient.ward },
+    { icon: <IconBed size={16} />, label: 'Leito', value: patient.bed },
+  ];
+  return (
+    <dl className="rcard__info">
+      {info.map((i) => (
+        <div key={i.label} className="rcard__item">
+          <dt>{i.icon}{i.label}</dt>
+          <dd title={i.value}>{i.value}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+/** Cartão da lista "Fichas completas": mesmo estilo do cartão de pacientes, com os dados da identificação. */
+export function RecordCard({ patient, to }) {
+  return (
+    <Link to={to} className="group card card--link pcard pcard--done rcard" title={`Abrir a ficha de ${patient.fullName}`}>
+      <div className="pcard__top">
+        <span className="badge badge--done"><IconCheckCircle size={16} />Ficha completa</span>
+        <span className="card__id">ID {patient.code}</span>
+      </div>
+      <div className="card__head">
+        <span className="card__name pcard__name transition-colors duration-200 group-hover:text-brand-text">{patient.fullName}</span>
+        <span className="inline-flex transition-transform duration-300 ease-out group-hover:translate-x-1">
+          <IconChevronRight size={22} />
+        </span>
+      </div>
+      <IdentTags patient={patient} />
+      <IdentInfo patient={patient} />
+      <RoleProgress progress={patient.progress} size={26} />
+      <p className="card__foot">Ficha concluída dia {formatDate(patient.completedAt || patient.updatedAt)}</p>
+    </Link>
+  );
+}
+
+/**
+ * Cartão com os dados da identificação, mais simples (sem status nem funções).
+ * Usado no "+ Novo" (escolher o paciente) e no topo da tela de preenchimento.
+ */
 export function IdentificationCard({ patient, to, selectable, selected, onSelect, footer }) {
   const body = (
     <>
@@ -99,7 +167,7 @@ export function IdentificationCard({ patient, to, selectable, selected, onSelect
         {selectable && (
           <span className={`option__mark option__mark--radio ${selected ? 'is-on' : ''}`} aria-hidden="true" />
         )}
-        <span className="card__name">{patient.fullName}</span>
+        <span className="card__name pcard__name">{patient.fullName}</span>
         <span className="card__id">ID {patient.code}</span>
         {to && (
           <span className="inline-flex transition-transform duration-300 ease-out group-hover:translate-x-1">
@@ -107,25 +175,20 @@ export function IdentificationCard({ patient, to, selectable, selected, onSelect
           </span>
         )}
       </div>
-      <ul className="card__list">
-        <li>{formatDate(patient.birthDate)}</li>
-        <li>{patient.hospital}</li>
-        <li>{patient.ward}</li>
-        <li>{patient.bed}</li>
-        <li>{patient.axisLabel}</li>
-      </ul>
+      <IdentTags patient={patient} />
+      <IdentInfo patient={patient} />
       <p className="card__foot">{footer ?? lastActionLabel(patient.lastAction, patient.lastActionAt)}</p>
     </>
   );
-  if (to) return <Link to={to} className="group card card--link" title={`Abrir a ficha de ${patient.fullName}`}>{body}</Link>;
+  if (to) return <Link to={to} className="group card card--link icard" title={`Abrir a ficha de ${patient.fullName}`}>{body}</Link>;
   if (selectable) {
     return (
-      <button type="button" className={`card card--select ${selected ? 'is-selected' : ''}`} onClick={onSelect} aria-pressed={selected} title={`Selecionar ${patient.fullName} para preencher a sua seção`}>
+      <button type="button" className={`card card--select icard ${selected ? 'is-selected' : ''}`} onClick={onSelect} aria-pressed={selected} title={`Selecionar ${patient.fullName} para preencher a sua seção`}>
         {body}
       </button>
     );
   }
-  return <div className="card">{body}</div>;
+  return <div className="card icard">{body}</div>;
 }
 
 /** Lista "rótulo: valor" da identificação. */

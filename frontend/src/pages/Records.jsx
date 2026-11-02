@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { api } from '../api.js';
 import { useAsync, useDebounced } from '../hooks.js';
 import { BottomNav, ErrorText, InfoBanner, Loading, Screen, SearchField } from '../components/ui.jsx';
-import { IdentificationCard } from '../components/patient.jsx';
+import { RecordCard } from '../components/patient.jsx';
 
 export default function Records() {
   const [query, setQuery] = useState('');
@@ -26,7 +26,7 @@ export default function Records() {
           </InfoBanner>
         ))}
         <div className="cards">
-          {records.map((r) => <IdentificationCard key={r.id} patient={r} to={`/fichas/${r.id}`} />)}
+          {records.map((r) => <RecordCard key={r.id} patient={r} to={`/fichas/${r.id}`} />)}
         </div>
       </div>
       <BottomNav />

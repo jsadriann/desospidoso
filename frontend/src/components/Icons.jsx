@@ -124,3 +124,18 @@ export const IconCheck = (p) => (
 export const IconFilter = (p) => (
   <Svg {...p}><path d="M4 5h16" /><path d="M7 12h10" /><path d="M10 19h4" /></Svg>
 );
+export const IconCalendar = (p) => (
+  <Svg {...p}><rect x="3.5" y="5" width="17" height="15.5" rx="2" /><path d="M8 3v4" /><path d="M16 3v4" /><path d="M3.5 10h17" /></Svg>
+);
+export const IconBuilding = (p) => (
+  <Svg {...p}>
+    <path d="M4 21V5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v16" /><path d="M15 10h4a1 1 0 0 1 1 1v10" /><path d="M3 21h18" />
+    <path d="M9.5 7.5v4" /><path d="M7.5 9.5h4" /><path d="M8 17h3" />
+  </Svg>
+);
+export const IconDoor = (p) => (
+  <Svg {...p}><path d="M5 21V4a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v17" /><path d="M3 21h18" /><path d="M15 12h.01" /></Svg>
+);
+export const IconBed = (p) => (
+  <Svg {...p}><path d="M3 7v13" /><path d="M3 16h18v4" /><path d="M21 16v-3a3 3 0 0 0-3-3h-8v6" /><circle cx="6.5" cy="12.5" r="1.8" /></Svg>
+);

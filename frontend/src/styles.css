@@ -422,6 +422,31 @@ legend { padding: 0; }
 }
 .pcard .card__foot { margin-right: 0; color: var(--gray); font-size: 12.5px; }
 
+/* Cartão de ficha completa */
+.rcard__tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.rcard__tag {
+  padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600;
+  color: var(--text-soft); background: var(--hover); border: 1px solid var(--border);
+}
+.rcard__info { margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 14px; }
+.rcard__item { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.rcard__item dt { display: flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 600; color: var(--gray); text-transform: uppercase; letter-spacing: .03em; }
+.rcard__item dt svg { color: var(--green-text); flex-shrink: 0; }
+.rcard__item dd { margin: 0; font-size: 13.5px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Cartão de identificação (escolha no "+ Novo" e topo da tela de preenchimento) */
+.icard { background: var(--panel); border-color: var(--border); box-shadow: var(--shadow); gap: 12px; padding: 18px 16px 16px; }
+.icard .card__foot { margin-right: 0; color: var(--gray); font-size: 12.5px; }
+.card--select.icard { transition: transform .25s var(--ease-out-soft), box-shadow .25s ease, border-color .2s ease, background-color .2s ease; }
+.card--select.icard:hover { border-color: var(--line); transform: translateY(-2px); box-shadow: 0 10px 24px rgba(22, 25, 37, 0.10); }
+:root[data-theme='dark'] .card--select.icard:hover { box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45); }
+.card--select.icard.is-selected {
+  border-color: var(--green); box-shadow: inset 0 0 0 1px var(--green), var(--shadow);
+  background: color-mix(in srgb, var(--green) 5%, var(--panel));
+}
+.card--select.icard.is-selected .option__mark--radio { border-color: var(--green); }
+.card--select.icard .option__mark--radio.is-on::after { animation: var(--animate-pop); }
+
 /* Resumo no topo da lista (também filtra por status) */
 .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
 .summary__item {
