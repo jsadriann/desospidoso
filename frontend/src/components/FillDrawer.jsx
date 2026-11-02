@@ -9,7 +9,7 @@ import { ProfessionIcon, QuestionForm } from './patient.jsx';
 
 /**
  * Formulário da função do usuário aberto POR CIMA da lista de pacientes (botão "Preencher" do cartão).
- * Computador: painel que entra pela direita. Celular: folha que sobe de baixo.
+ * Computador: janela no centro da tela, subindo de baixo para cima. Celular: folha que sobe de baixo.
  * A lista continua visível atrás. Ao salvar, o painel fecha e a lista é atualizada (onSaved).
  */
 export default function FillDrawer({ patientId, onClose, onSaved }) {
