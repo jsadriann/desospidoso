@@ -1,5 +1,5 @@
 import { useEffect, useId, useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext.jsx';
 import { apiUrl } from '../api.js';
 import {
@@ -75,10 +75,13 @@ export function SideNav({ collapsed = false, onToggle }) {
       >
         {collapsed ? <IconChevronRight size={16} strokeWidth={2.5} /> : <IconChevronLeft size={16} strokeWidth={2.5} />}
       </button>
+      {/* Logo clicável: de qualquer tela, volta para a lista de pacientes */}
       <div className="side-nav__top">
-        {collapsed
-          ? <img className="side-nav__mark" src="/favicon.svg" alt="DesospIdoso" width="36" height="36" />
-          : <div className="side-nav__logo"><Logo size="md" /></div>}
+        <Link to="/pacientes" className="side-nav__home" title="Ir para a lista de pacientes" aria-label="desospIdoso: ir para a lista de pacientes">
+          {collapsed
+            ? <img className="side-nav__mark" src="/favicon.svg" alt="" width="36" height="36" />
+            : <span className="side-nav__logo"><Logo size="md" /></span>}
+        </Link>
       </div>
       <button
         className="btn btn--primary side-nav__new"

@@ -1049,6 +1049,16 @@ legend { padding: 0; }
 .side-nav__item:hover svg { transform: scale(1.12); }
 .side-nav__new { animation: var(--animate-fade-up); }
 
+/* Logo do menu lateral (link para a lista de pacientes) */
+.side-nav__home {
+  display: inline-flex; border-radius: 10px; text-decoration: none;
+  transition: transform .25s var(--ease-spring), opacity .2s;
+}
+.side-nav__home:hover { transform: scale(1.04); }
+.side-nav__home:active { transform: scale(.97); }
+.side-nav__home:focus-visible { outline: 3px solid rgba(36, 99, 23, 0.4); outline-offset: 4px; }
+.side-nav__logo { display: block; }
+
 /* Perfil: itens do menu em sequência, foto cresce no hover */
 .menu li { animation: var(--animate-fade-up); animation-delay: 120ms; }
 .menu li:nth-child(2) { animation-delay: 170ms; }
