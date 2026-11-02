@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { ah, one, transaction } from '../db.js';
+import { ah, one, query, transaction } from '../db.js';
 import { requireAuth } from '../auth.js';
 import { ROLES, validateAnswers } from '../forms.js';
 import {
@@ -31,6 +31,18 @@ router.post('/', ah(async (req, res) => {
       req.user.id, req.user.name],
   );
   res.status(201).json({ patient: await getPatientDetail(row.id, req.user) });
+}));
+
+// POST /api/patients/purge  { ids: [1, 2, 3] }  -> "Remover permanentemente" na lixeira
+// Apaga de vez apenas arquivos que já estão na lixeira (as seções saem junto, por ON DELETE CASCADE).
+router.post('/purge', ah(async (req, res) => {
+  const ids = [...new Set((req.body?.ids || []).map(Number))].filter((n) => Number.isInteger(n) && n > 0);
+  if (!ids.length) return res.status(400).json({ error: 'Selecione ao menos um arquivo da lixeira.' });
+  const rows = await query(
+    'DELETE FROM patients WHERE id = ANY($1::int[]) AND deleted_at IS NOT NULL RETURNING id',
+    [ids],
+  );
+  res.json({ removed: rows.length, ids: rows.map((r) => r.id) });
 }));
 
 // GET /api/patients/:id

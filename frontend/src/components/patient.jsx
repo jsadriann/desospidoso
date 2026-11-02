@@ -73,31 +73,59 @@ export function MissingRoles({ roles, compact = false }) {
  * Cartão da lista "Pacientes": status em cor, progresso, funções e última alteração.
  * Se a parte do usuário ainda falta, ao passar o mouse aparece o botão "Preencher" (no celular fica sempre
  * visível). onFill(patient) abre o formulário por cima da lista; sem onFill, abre a tela de preenchimento.
- * Na lixeira, o cartão mostra sempre o botão "Restaurar" (onRestore).
+ * Na lixeira, o cartão mostra sempre o botão "Restaurar" (onRestore). Com selecting, o cartão vira uma caixa de
+ * marcar (seleção para remover permanentemente): selected / onToggle(patient).
  */
-export function PatientCard({ patient, to, onFill, onRestore }) {
+export function PatientCard({ patient, to, onFill, onRestore, selecting = false, selected = false, onToggle }) {
   const navigate = useNavigate();
   const s = STATUS[patient.status] || STATUS.PENDENTE;
   const canFill = !patient.myRoleDone && !patient.deletedAt;
-  return (
-    <div className="group pcard-wrap">
-      <Link to={to} className={`card card--link pcard pcard--${s.cls}`} title={`Abrir os detalhes de ${patient.fullName}`}>
-        <div className="pcard__top">
-          <StatusTag status={patient.status} />
-          <span className="card__id">ID {patient.code}</span>
-        </div>
-        <div className="card__head">
-          <span className="card__name pcard__name transition-colors duration-200 group-hover:text-brand-text">{patient.fullName}</span>
+  const body = (
+    <>
+      <div className="pcard__top">
+        {selecting && <span className={`pcard__check ${selected ? 'is-on' : ''}`} aria-hidden="true"><IconCheck size={14} strokeWidth={3} /></span>}
+        <StatusTag status={patient.status} />
+        <span className="card__id">ID {patient.code}</span>
+      </div>
+      <div className="card__head">
+        <span className="card__name pcard__name transition-colors duration-200 group-hover:text-brand-text">{patient.fullName}</span>
+        {!selecting && (
           <span className="inline-flex transition-transform duration-300 ease-out group-hover:translate-x-1">
             <IconChevronRight size={22} />
           </span>
-        </div>
-        <ProgressBar done={patient.sectionsDone} total={patient.totalSections} status={patient.status} />
-        <RoleProgress progress={patient.progress} />
-        {patient.pendingRoles.length
-          ? <MissingRoles roles={patient.pendingRoles} compact />
-          : <p className="missing missing--done">Todas as funções preencheram.</p>}
-        <p className="card__foot">{lastActionLabel(patient.lastAction, patient.lastActionAt)}</p>
+        )}
+      </div>
+      <ProgressBar done={patient.sectionsDone} total={patient.totalSections} status={patient.status} />
+      <RoleProgress progress={patient.progress} />
+      {patient.pendingRoles.length
+        ? <MissingRoles roles={patient.pendingRoles} compact />
+        : <p className="missing missing--done">Todas as funções preencheram.</p>}
+      <p className="card__foot">{lastActionLabel(patient.lastAction, patient.lastActionAt)}</p>
+    </>
+  );
+
+  // Modo de seleção (lixeira): o cartão inteiro marca/desmarca, sem abrir os detalhes
+  if (selecting) {
+    return (
+      <div className="group pcard-wrap">
+        <button
+          type="button"
+          role="checkbox"
+          aria-checked={selected}
+          className={`card card--link pcard pcard--${s.cls} pcard--selectable ${selected ? 'is-selected' : ''}`}
+          title={selected ? `Desmarcar ${patient.fullName}` : `Marcar ${patient.fullName}`}
+          onClick={() => onToggle?.(patient)}
+        >
+          {body}
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="group pcard-wrap">
+      <Link to={to} className={`card card--link pcard pcard--${s.cls}`} title={`Abrir os detalhes de ${patient.fullName}`}>
+        {body}
       </Link>
       {patient.deletedAt && onRestore && (
         <button

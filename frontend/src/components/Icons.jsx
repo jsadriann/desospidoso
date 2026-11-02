@@ -142,3 +142,6 @@ export const IconBed = (p) => (
 export const IconPencil = (p) => (
   <Svg {...p}><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4z" /><path d="M13.5 6.5l4 4" /></Svg>
 );
+export const IconCheckSquare = (p) => (
+  <Svg {...p}><rect x="3.5" y="3.5" width="17" height="17" rx="3" /><path d="M8 12.5l3 3 5-6" /></Svg>
+);

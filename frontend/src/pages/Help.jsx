@@ -95,6 +95,13 @@ export default function Help() {
         escolher a ordem dos cartões: alteração mais recente, alteração mais antiga, nome ou menos seções preenchidas.
       </p>
 
+      <h2>Como usar a lixeira?</h2>
+      <p>
+        Os arquivos excluídos ficam na aba Lixeira por 30 dias e depois são apagados de vez. Para trazer um arquivo de
+        volta, clique em Restaurar no próprio cartão. Para apagar antes do prazo, clique em Selecionar, marque os cartões
+        e clique em Remover permanentemente. Essa ação não pode ser desfeita.
+      </p>
+
       <h2>Como entender a informação da última alteração?</h2>
       <p>O texto no canto inferior direito do cartão corresponde à última alteração ou momento do arquivo do paciente, que pode variar dependendo da última ação do participante:</p>
       <p><strong>Criado dia xx/xx/xxxx:</strong> Quando o paciente foi criado há 3 dias atrás ou mais.</p>

@@ -144,7 +144,7 @@ As abas filtram a lista:
 - Todos
 - Recentes: pacientes criados nos últimos 3 dias.
 - Lixeira: arquivos excluídos. Eles podem ser restaurados em até 30 dias e, depois disso, são apagados
-  definitivamente.
+  definitivamente. Também é possível selecionar arquivos da lixeira e removê-los permanentemente antes do prazo.
 
 ### Fichas completas
 
@@ -190,6 +190,7 @@ As rotas, exceto `/api/auth/*`, `/api/forms` e `/api/health`, exigem o cabeçalh
 | PUT | `/api/patients/:id/sections/:role` | Salva a seção da função do usuário |
 | DELETE | `/api/patients/:id` | Move para a lixeira |
 | POST | `/api/patients/:id/restore` | Restaura da lixeira |
+| POST | `/api/patients/purge` | Remove permanentemente arquivos da lixeira (`ids`) |
 | GET | `/api/patients/:id/pdf` | PDF da ficha |
 | GET | `/api/records` | Fichas completas |
 | GET | `/api/health` | Verifica a API e a conexão com o banco |

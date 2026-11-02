@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '../api.js';
 import { useApp } from '../context/AppContext.jsx';
@@ -6,7 +6,7 @@ import { useAsync, useCountUp, useDebounced } from '../hooks.js';
 import { BottomNav, ConfirmModal, ErrorText, InfoBanner, Loading, Screen, SearchField, Tabs } from '../components/ui.jsx';
 import { PatientCard, STATUS } from '../components/patient.jsx';
 import FillDrawer from '../components/FillDrawer.jsx';
-import { IconHelp, IconPlus, IconRestore, IconTrash } from '../components/Icons.jsx';
+import { IconCheckSquare, IconHelp, IconPlus, IconRestore, IconTrash } from '../components/Icons.jsx';
 
 const EMPTY = {
   todos: 'Nenhum paciente adicionado. Clique em + Novo para criar um novo registro de paciente.',
@@ -68,6 +68,43 @@ export default function Patients() {
     () => byAxis.filter((p) => !status || p.status === status).sort(SORTS[sort].fn),
     [byAxis, status, sort],
   );
+  // Lixeira: seleção de cartões para remover permanentemente
+  const [selecting, setSelecting] = useState(false);
+  const [selected, setSelected] = useState(() => new Set());
+  const [purgeOpen, setPurgeOpen] = useState(false);
+  const stopSelecting = () => { setSelecting(false); setSelected(new Set()); };
+  useEffect(() => { stopSelecting(); }, [tab]); // ao trocar de aba, sai do modo de seleção
+  // Se a busca esconder cartões, eles saem da seleção (só remove o que está à vista)
+  useEffect(() => {
+    setSelected((cur) => {
+      const visible = new Set(patients.map((p) => p.id));
+      const next = new Set([...cur].filter((id) => visible.has(id)));
+      return next.size === cur.size ? cur : next;
+    });
+  }, [patients]);
+  const toggle = (p) => setSelected((cur) => {
+    const next = new Set(cur);
+    if (next.has(p.id)) next.delete(p.id); else next.add(p.id);
+    return next;
+  });
+  const allSelected = patients.length > 0 && patients.every((p) => selected.has(p.id));
+  const toggleAll = () => setSelected(allSelected ? new Set() : new Set(patients.map((p) => p.id)));
+
+  const purge = async () => {
+    setBusy(true);
+    try {
+      const { removed } = await api.purgePatients([...selected]);
+      notify('success', `${removed} ${removed === 1 ? 'arquivo removido' : 'arquivos removidos'} permanentemente`);
+      setPurgeOpen(false);
+      stopSelecting();
+      reload();
+    } catch {
+      notify('error');
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const filtered = Boolean(status || axis);
   const clearFilters = () => { setStatus(''); setAxis(''); };
 
@@ -92,6 +129,27 @@ export default function Patients() {
           <InfoBanner>
             <strong>Atenção:</strong> após 30 dias, todos os arquivos que não forem restaurados serão permanentemente excluídos.
           </InfoBanner>
+        )}
+        {tab === 'lixeira' && all.length > 0 && (
+          <div className="trash-toolbar">
+            <span className="trash-toolbar__info">
+              {selecting
+                ? `${selected.size} de ${patients.length} ${patients.length === 1 ? 'selecionado' : 'selecionados'}`
+                : `${all.length} ${all.length === 1 ? 'arquivo' : 'arquivos'} na lixeira`}
+            </span>
+            {selecting ? (
+              <>
+                <button type="button" className="link-btn" title={allSelected ? 'Desmarcar todos os cartões' : 'Marcar todos os cartões'} onClick={toggleAll}>
+                  {allSelected ? 'Desmarcar todos' : 'Selecionar todos'}
+                </button>
+                <button type="button" className="link-btn trash-toolbar__cancel" title="Sair do modo de seleção" onClick={stopSelecting}>Cancelar</button>
+              </>
+            ) : (
+              <button type="button" className="btn btn--outline btn--sm" title="Marcar arquivos para remover permanentemente" onClick={() => setSelecting(true)}>
+                <IconCheckSquare size={18} /> Selecionar
+              </button>
+            )}
+          </div>
         )}
 
         {tab !== 'lixeira' && all.length > 0 && (
@@ -146,15 +204,44 @@ export default function Patients() {
         )}
         <div className="cards">
           {patients.map((p) => (
-            <PatientCard key={p.id} patient={p} to={`/pacientes/${p.id}`} onFill={() => setFilling(p.id)} onRestore={setRestoring} />
+            <PatientCard
+              key={p.id}
+              patient={p}
+              to={`/pacientes/${p.id}`}
+              onFill={() => setFilling(p.id)}
+              onRestore={setRestoring}
+              selecting={selecting}
+              selected={selected.has(p.id)}
+              onToggle={toggle}
+            />
           ))}
         </div>
       </div>
-      <button className="fab" aria-label="Novo paciente" title="Criar um novo arquivo de paciente" onClick={() => navigate('/pacientes/novo')}>
+      {selecting && (
+        <div className="select-bar" role="region" aria-label="Ações da seleção">
+          <span className="select-bar__count"><strong>{selected.size}</strong> {selected.size === 1 ? 'selecionado' : 'selecionados'}</span>
+          <button
+            type="button"
+            className="btn btn--danger btn--sm"
+            disabled={selected.size === 0}
+            title={selected.size ? 'Apagar de vez os arquivos selecionados' : 'Selecione ao menos um cartão'}
+            onClick={() => setPurgeOpen(true)}
+          >
+            <IconTrash size={18} /> Remover permanentemente
+          </button>
+        </div>
+      )}
+      {!selecting && <button className="fab" aria-label="Novo paciente" title="Criar um novo arquivo de paciente" onClick={() => navigate('/pacientes/novo')}>
         <IconPlus size={26} />
-      </button>
+      </button>}
       <BottomNav />
       {filling && <FillDrawer patientId={filling} onClose={() => setFilling(null)} onSaved={reload} />}
+      {purgeOpen && (
+        <ConfirmModal title="Remover permanentemente" icon={<IconTrash size={22} />} confirmLabel="Sim, remover" loading={busy} onConfirm={purge} onClose={() => setPurgeOpen(false)}>
+          {selected.size === 1 ? 'O arquivo selecionado será apagado' : `Os ${selected.size} arquivos selecionados serão apagados`} de vez,
+          com todas as seções preenchidas. <strong>Esta ação não pode ser desfeita.</strong>
+        </ConfirmModal>
+      )}
       {restoring && (
         <ConfirmModal title="Restaurar" icon={<IconRestore size={22} />} confirmLabel="Sim, restaurar" loading={busy} onConfirm={restore} onClose={() => setRestoring(null)}>
           Ao confirmar, o arquivo de <strong>{restoring.fullName}</strong> será restaurado, voltando a estar disponível na

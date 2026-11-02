@@ -71,6 +71,7 @@ export const api = {
   saveSection: (id, role, answers) => request('PUT', `/patients/${id}/sections/${role}`, { answers }),
   deletePatient: (id) => request('DELETE', `/patients/${id}`),
   restorePatient: (id) => request('POST', `/patients/${id}/restore`),
+  purgePatients: (ids) => request('POST', '/patients/purge', { ids }), // remove de vez (só da lixeira)
 
   // Fichas completas
   records: (q = '') => request('GET', `/records?q=${encodeURIComponent(q)}`),
