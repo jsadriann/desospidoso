@@ -738,7 +738,6 @@ legend { padding: 0; }
 .pref-row__text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
 .pref-row__title { font-size: 15px; font-weight: 700; }
 .pref-row__desc { font-size: 13.5px; line-height: 1.5; color: var(--text-soft); }
-.pref-row__status { font-size: 13px; color: var(--green-text); }
 
 /* ---------- Chaves liga/desliga (tema no Perfil, opções em Preferências) ---------- */
 .profile-head__theme { margin-left: auto; align-self: flex-start; padding-top: 2px; }

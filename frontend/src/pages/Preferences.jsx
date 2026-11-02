@@ -32,9 +32,6 @@ export default function Preferences() {
             O tema claro ou escuro acompanha a configuração do seu celular ou computador. Enquanto esta opção estiver
             ativa, a troca de tema no Perfil fica desabilitada.
           </p>
-          {followDevice && (
-            <p className="pref-row__status">Tema atual do dispositivo: <strong>{theme === 'dark' ? 'escuro' : 'claro'}</strong></p>
-          )}
         </div>
         <Switch
           checked={followDevice}
