@@ -15,7 +15,14 @@ export function storedTheme() {
 /** Aplica o tema na página e lembra no navegador. */
 export function applyTheme(theme) {
   const t = THEMES.includes(theme) ? theme : 'light';
-  document.documentElement.dataset.theme = t;
+  const root = document.documentElement;
+  // Ao trocar de tema, as cores mudam suavemente (classe removida logo depois)
+  if (root.dataset.theme && root.dataset.theme !== t) {
+    root.classList.add('theme-switching');
+    clearTimeout(applyTheme.timer);
+    applyTheme.timer = setTimeout(() => root.classList.remove('theme-switching'), 450);
+  }
+  root.dataset.theme = t;
   const meta = document.querySelector('meta[name="theme-color"]');
   if (meta) meta.setAttribute('content', t === 'dark' ? '#111318' : '#246317');
   try {

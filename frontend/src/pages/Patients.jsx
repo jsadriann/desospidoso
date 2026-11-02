@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '../api.js';
 import { useApp } from '../context/AppContext.jsx';
-import { useAsync, useDebounced } from '../hooks.js';
+import { useAsync, useCountUp, useDebounced } from '../hooks.js';
 import { BottomNav, ErrorText, InfoBanner, Loading, Screen, SearchField, Tabs } from '../components/ui.jsx';
 import { PatientCard, STATUS } from '../components/patient.jsx';
 import { IconHelp, IconPlus, IconTrash } from '../components/Icons.jsx';
@@ -19,6 +19,12 @@ const SORTS = {
   nome: { label: 'Nome (A–Z)', fn: (a, b) => a.fullName.localeCompare(b.fullName, 'pt-BR') },
   progresso: { label: 'Menos seções preenchidas', fn: (a, b) => a.sectionsDone - b.sectionsDone },
 };
+
+/** Número do resumo: conta de 0 até o valor quando a lista carrega ou muda. */
+function CountUp({ value }) {
+  const n = useCountUp(value);
+  return <span className="summary__num" aria-label={String(value)}>{n}</span>;
+}
 
 export default function Patients() {
   const navigate = useNavigate();
@@ -83,7 +89,7 @@ export default function Patients() {
                   title={status === key ? 'Mostrar todos os status' : `Mostrar só: ${s.short.toLowerCase()}`}
                   onClick={() => setStatus(status === key ? '' : key)}
                 >
-                  <span className="summary__num">{counts[key]}</span>
+                  <CountUp value={counts[key]} />
                   <span className="summary__label">{s.short}</span>
                 </button>
               ))}

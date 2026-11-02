@@ -18,7 +18,7 @@ export default function PatientDetails() {
   const [modal, setModal] = useState(null); // 'delete' | 'restore'
   const [busy, setBusy] = useState(false);
 
-  if (loading && !data) return <Screen narrow><Loading /></Screen>;
+  if (loading && !data) return <Screen narrow><Loading count={2} /></Screen>;
   if (error) return <Screen narrow><TopBar title="Detalhes" /><ErrorText>{error.message}</ErrorText></Screen>;
   const p = data.patient;
   const trashed = !!p.deletedAt;

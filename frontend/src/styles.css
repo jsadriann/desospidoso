@@ -1,4 +1,84 @@
-/* DesospIdoso — estilos baseados nas telas (fonte Inter, verde #246317). */
+/* desospIdoso — estilos com Tailwind CSS 4.
+   - @theme: cores, fonte e animações do app viram classes do Tailwind (bg-brand, text-ink, animate-fade-up...).
+     As cores apontam para as variáveis abaixo, então mudam sozinhas no tema escuro.
+   - @layer components: os componentes do app (cartões, botões, telas). Ficam numa camada abaixo das
+     classes utilitárias, então uma classe do Tailwind no JSX sempre consegue ajustar um componente. */
+@import "tailwindcss";
+
+/* Tema escuro: ativado por data-theme="dark" no <html> (Perfil > Preferências). Uso: dark:bg-panel */
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+@theme inline {
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  --color-brand: var(--green);
+  --color-brand-hover: var(--green-hover);
+  --color-brand-text: var(--green-text);
+  --color-ink: var(--text);
+  --color-ink-soft: var(--text-soft);
+  --color-muted: var(--gray);
+  --color-line: var(--line);
+  --color-edge: var(--border);
+  --color-surface: var(--bg);
+  --color-page: var(--page);
+  --color-panel: var(--panel);
+  --color-panel-head: var(--panel-head);
+  --color-hover: var(--hover);
+  --color-danger: var(--red);
+  --color-navy: var(--navy);
+  --color-st-mine: var(--st-mine);
+  --color-st-mine-bg: var(--st-mine-bg);
+  --color-st-wait: var(--st-wait);
+  --color-st-wait-bg: var(--st-wait-bg);
+  --color-st-done: var(--st-done);
+  --color-st-done-bg: var(--st-done-bg);
+  --radius-app: var(--radius);
+  --radius-app-lg: var(--radius-lg);
+  --shadow-app: var(--shadow);
+}
+
+/* Animações do app (classes animate-*). Quem ativa "reduzir movimento" no aparelho não vê animações. */
+@theme {
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --animate-fade-in: fade-in 0.35s var(--ease-out-soft) both;
+  --animate-fade-up: fade-up 0.5s var(--ease-out-soft) both;
+  --animate-fade-down: fade-down 0.45s var(--ease-out-soft) both;
+  --animate-slide-in-right: slide-in-right 0.45s var(--ease-out-soft) both;
+  --animate-scale-in: scale-in 0.3s var(--ease-spring) both;
+  --animate-pop: pop 0.45s var(--ease-spring) both;
+  --animate-grow-x: grow-x 0.9s var(--ease-out-soft) both;
+  --animate-shimmer: shimmer 1.4s linear infinite;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-pulse-ring: pulse-ring 2.4s var(--ease-out-soft) infinite;
+  --animate-wiggle: wiggle 0.5s ease-in-out;
+
+  @keyframes fade-in { from { opacity: 0; } }
+  @keyframes fade-up { from { opacity: 0; transform: translateY(14px); } }
+  @keyframes fade-down { from { opacity: 0; transform: translateY(-10px); } }
+  @keyframes slide-in-right { from { opacity: 0; transform: translateX(24px); } }
+  @keyframes scale-in { from { opacity: 0; transform: scale(0.92); } }
+  @keyframes pop { 0% { transform: scale(0); } 70% { transform: scale(1.15); } 100% { transform: scale(1); } }
+  @keyframes grow-x { from { transform: scaleX(0); } }
+  @keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+  @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+  @keyframes pulse-ring {
+    0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--green) 45%, transparent); }
+    70%, 100% { box-shadow: 0 0 0 16px color-mix(in srgb, var(--green) 0%, transparent); }
+  }
+  @keyframes wiggle { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-8deg); } 75% { transform: rotate(8deg); } }
+}
+
+@layer components {
+/* Compatibilidade com o reset do Tailwind (preflight): mantém o comportamento que as telas já tinham */
+html { line-height: normal; }
+:where(svg) { display: inline; vertical-align: middle; }
+:where(h1) { font-size: 2em; font-weight: 700; }
+:where(h2) { font-size: 1.5em; font-weight: 700; }
+:where(h3) { font-size: 1.17em; font-weight: 700; }
+:where(strong, b) { font-weight: 700; }
+:where(button, [role='button']) { cursor: pointer; }
+:where(button:disabled) { cursor: default; }
+
 :root {
   --green: #246317;
   --green-hover: #1d4b11;
@@ -258,7 +338,7 @@ legend { padding: 0; }
 .q__hint { font-size: 14px; color: var(--gray); margin: -4px 0 4px; }
 .role-head { display: flex; align-items: center; gap: 14px; }
 .role-head h3 { font-size: 16px; font-weight: 700; line-height: 1.35; }
-.profession-icon { object-fit: contain; flex-shrink: 0; }
+.profession-icon { object-fit: contain; flex-shrink: 0; aspect-ratio: 1 / 1; }
 
 /* ---------- Etapas ---------- */
 .stepper { display: flex; align-items: center; margin-top: 24px; }
@@ -748,6 +828,164 @@ legend { padding: 0; }
   .cards { grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); }
 }
 
+/* =====================================================================
+   Animações (usam as animações definidas no @theme: --animate-fade-up etc.)
+   ===================================================================== */
+
+/* Entrada das telas: os blocos aparecem de baixo para cima, um após o outro */
+.screen > :not(.bottom-nav, .fab, .modal-backdrop, .actions--sticky) { animation: var(--animate-fade-up); }
+.screen > :not(.bottom-nav, .fab, .modal-backdrop, .actions--sticky):nth-child(2) { animation-delay: 45ms; }
+.screen > :not(.bottom-nav, .fab, .modal-backdrop, .actions--sticky):nth-child(3) { animation-delay: 90ms; }
+.screen > :not(.bottom-nav, .fab, .modal-backdrop, .actions--sticky):nth-child(4) { animation-delay: 135ms; }
+.screen > :not(.bottom-nav, .fab, .modal-backdrop, .actions--sticky):nth-child(5) { animation-delay: 180ms; }
+.screen > :not(.bottom-nav, .fab, .modal-backdrop, .actions--sticky):nth-child(6) { animation-delay: 225ms; }
+.screen > :not(.bottom-nav, .fab, .modal-backdrop, .actions--sticky):nth-child(7) { animation-delay: 270ms; }
+.screen > :not(.bottom-nav, .fab, .modal-backdrop, .actions--sticky):nth-child(8) { animation-delay: 315ms; }
+.screen > :nth-child(n + 9):not(.bottom-nav, .fab, .modal-backdrop, .actions--sticky) { animation-delay: 360ms; }
+.actions--sticky { animation: var(--animate-fade-in); animation-delay: 200ms; }
+
+/* Cartões das listas entram em sequência */
+.cards > * { animation: var(--animate-fade-up); animation-delay: 120ms; }
+.cards > *:nth-child(2) { animation-delay: 170ms; }
+.cards > *:nth-child(3) { animation-delay: 220ms; }
+.cards > *:nth-child(4) { animation-delay: 270ms; }
+.cards > *:nth-child(5) { animation-delay: 320ms; }
+.cards > *:nth-child(6) { animation-delay: 370ms; }
+.cards > *:nth-child(7) { animation-delay: 420ms; }
+.cards > *:nth-child(8) { animation-delay: 470ms; }
+.cards > *:nth-child(9) { animation-delay: 520ms; }
+.cards > *:nth-child(10) { animation-delay: 570ms; }
+.cards > *:nth-child(11) { animation-delay: 620ms; }
+.cards > *:nth-child(12) { animation-delay: 670ms; }
+.cards > :nth-child(n + 13) { animation-delay: 700ms; }
+
+/* Cartões e painéis: sobem levemente ao passar o mouse */
+.card--link, .summary__item, .theme-option {
+  transition: transform .25s var(--ease-out-soft), box-shadow .25s ease, border-color .2s ease;
+}
+.card--link:hover { transform: translateY(-3px); box-shadow: 0 12px 28px rgba(22, 25, 37, 0.12); }
+:root[data-theme='dark'] .card--link:hover { box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45); }
+.card--link:active { transform: translateY(-1px) scale(.995); }
+/* No cartão de paciente o hover não apaga a faixa colorida do status */
+.pcard.card--link:hover { border-color: var(--line); border-left-color: var(--st-wait); }
+.pcard--mine.card--link:hover { border-left-color: var(--st-mine); }
+.pcard--done.card--link:hover { border-left-color: var(--st-done); }
+.theme-option:hover:not(:disabled) { transform: translateY(-2px); }
+
+/* Barra de progresso enche e os ícones das funções aparecem um a um */
+.progress__fill { transform-origin: left center; animation: var(--animate-grow-x); animation-delay: 250ms; }
+.roles__item { animation: var(--animate-scale-in); animation-delay: 200ms; transition: transform .2s var(--ease-spring); }
+.roles__item:nth-child(2) { animation-delay: 245ms; }
+.roles__item:nth-child(3) { animation-delay: 290ms; }
+.roles__item:nth-child(4) { animation-delay: 335ms; }
+.roles__item:nth-child(5) { animation-delay: 380ms; }
+.roles__item:nth-child(6) { animation-delay: 425ms; }
+.roles__item:nth-child(7) { animation-delay: 470ms; }
+.roles__item:hover { transform: scale(1.15); z-index: 1; }
+.roles__check { animation: var(--animate-pop); animation-delay: 650ms; }
+
+/* Botões: sobem ao passar o mouse e "afundam" ao clicar */
+.btn { transition: background-color .2s, color .2s, border-color .2s, transform .2s var(--ease-out-soft), box-shadow .25s; }
+.btn--primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 20px color-mix(in srgb, var(--green) 32%, transparent); }
+.btn--outline:hover:not(:disabled) { transform: translateY(-2px); }
+.btn:active:not(:disabled) { transform: translateY(0) scale(.97); box-shadow: none; }
+.icon-btn { transition: background-color .2s, transform .15s var(--ease-out-soft); }
+.icon-btn:hover { background: var(--hover); }
+.icon-btn--ring:hover { background: var(--hover); }
+.icon-btn:active { transform: scale(.9); }
+.tab { transition: background-color .25s, border-color .25s, color .25s, transform .15s var(--ease-out-soft); }
+.tab:hover:not(.tab--active) { background: var(--hover); }
+.tab:active { transform: scale(.96); }
+
+/* Botão "+" flutuante: aparece com um salto, chama atenção duas vezes e gira o "+" no hover */
+.fab {
+  animation: var(--animate-pop), pulse-ring 2.4s var(--ease-out-soft) 900ms 2;
+  transition: background-color .2s, transform .3s var(--ease-spring);
+}
+.fab:hover { transform: rotate(90deg) scale(1.06); }
+.fab:active { transform: rotate(90deg) scale(.94); }
+
+/* Opções dos formulários: destaque suave ao marcar e o "check" aparece com um salto */
+.option { transition: border-color .2s, box-shadow .2s, background-color .25s; }
+.option:hover:not(.option--checked) { border-color: var(--text-soft); }
+.option--checked { background: color-mix(in srgb, var(--green) 5%, var(--bg)); }
+.option__row input:checked + .option__mark--radio::after,
+.option__row input:checked + .option__mark--checkbox::after { animation: var(--animate-pop); }
+.option__row input:checked + .option__mark--checkbox { transition: background-color .2s, border-color .2s; }
+.option__extra, .q--nested { animation: var(--animate-fade-down); }
+
+/* Campos: o rótulo acompanha o foco */
+.field:focus-within .field__label { color: var(--green-text); }
+.field__label { transition: color .2s; }
+
+/* Janelas (modais) e avisos */
+.modal-backdrop { backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
+.modal { animation: var(--animate-scale-in); }
+.toast > svg { animation: var(--animate-pop); animation-delay: 120ms; }
+.error-text { animation: var(--animate-fade-down); }
+.error-text svg { animation: var(--animate-wiggle); animation-delay: 150ms; }
+
+/* Barra inferior (celular) e menu lateral */
+.bottom-nav__item { transition: color .25s; }
+.bottom-nav__item svg { transition: transform .3s var(--ease-spring); }
+.bottom-nav__item.is-active svg { transform: translateY(-2px) scale(1.12); }
+.side-nav__item { transition: background-color .2s, color .2s; }
+.side-nav__item svg { transition: transform .3s var(--ease-spring); }
+.side-nav__item:hover svg { transform: scale(1.12); }
+.side-nav__new { animation: var(--animate-fade-up); }
+
+/* Perfil: itens do menu em sequência, foto cresce no hover */
+.menu li { animation: var(--animate-fade-up); animation-delay: 120ms; }
+.menu li:nth-child(2) { animation-delay: 170ms; }
+.menu li:nth-child(3) { animation-delay: 220ms; }
+.menu li:nth-child(4) { animation-delay: 270ms; }
+.menu li:nth-child(5) { animation-delay: 320ms; }
+.menu a, .menu button { transition: background-color .2s, padding .25s var(--ease-out-soft); }
+.menu a:hover, .menu button:hover { padding-left: 8px; }
+.avatar-btn .avatar { transition: transform .3s var(--ease-spring); }
+.avatar-btn:hover:not(:disabled) .avatar { transform: scale(1.05); }
+.theme-option__check { animation: var(--animate-pop); }
+
+/* Etapas do novo paciente */
+.stepper__dot--on { animation: var(--animate-pop); }
+
+/* Carregando: blocos "esqueleto" com brilho passando */
+.skeleton-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 20px; }
+.skeleton-card {
+  display: flex; flex-direction: column; gap: 14px; padding: 20px 16px; border-radius: var(--radius);
+  border: 1px solid var(--border); background: var(--panel);
+}
+.skeleton {
+  display: block; border-radius: 999px;
+  background: linear-gradient(90deg, var(--border) 25%, var(--hover) 40%, var(--border) 60%);
+  background-size: 300% 100%; animation: var(--animate-shimmer);
+}
+
+/* Tela Sobre: foto e textos entram em sequência; o fundo verde da foto flutua devagar */
+.about__media { animation: var(--animate-fade-in); }
+.about__media img { animation: var(--animate-scale-in); animation-duration: .7s; }
+.about__media::before { animation: var(--animate-float); }
+.about__intro > * { animation: var(--animate-fade-up); }
+.about__intro > *:nth-child(2) { animation-delay: 160ms; }
+.about__intro > *:nth-child(3) { animation-delay: 240ms; }
+.about__intro > *:nth-child(4) { animation-delay: 320ms; }
+.about__intro > *:nth-child(5) { animation-delay: 400ms; }
+.about__intro > *:nth-child(6) { animation-delay: 480ms; }
+.about__intro .btn { animation: var(--animate-fade-up), pulse-ring 2.4s var(--ease-out-soft) 1.2s 2; animation-delay: 480ms, 1.2s; }
+
+/* Elementos que aparecem ao rolar a página (ver o hook useReveal) */
+.reveal { opacity: 0; transform: translateY(18px); transition: opacity .6s var(--ease-out-soft), transform .6s var(--ease-out-soft); transition-delay: calc(var(--i, 0) * 120ms); }
+.reveal.is-visible { opacity: 1; transform: none; }
+.reveal.is-visible .about__num { animation: var(--animate-pop); animation-delay: calc(var(--i, 0) * 120ms + 200ms); }
+
+/* Troca de tema claro/escuro: as cores mudam suavemente */
+html.theme-switching *, html.theme-switching *::before, html.theme-switching *::after {
+  transition: background-color .35s ease, color .35s ease, border-color .35s ease, fill .35s ease !important;
+}
+
+/* Quem pediu "reduzir movimento" no aparelho: sem animações e com tudo visível */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
+  .reveal { opacity: 1; transform: none; }
 }
+} /* fim @layer components */

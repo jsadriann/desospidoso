@@ -1,4 +1,5 @@
 import { AppName, Button, Logo, Screen } from './ui.jsx';
+import { useReveal } from '../hooks.js';
 import { IconArrowLeft } from './Icons.jsx';
 
 const STEPS = [
@@ -24,6 +25,7 @@ const STEPS = [
  * Telas grandes: logo no topo, destaque com foto e texto lado a lado e "Como funciona" em 3 cartões.
  */
 export default function About({ greeting, onStart, onBack, startLabel = 'Começar agora' }) {
+  const howRef = useReveal();
   return (
     <Screen className="about">
       <header className="about__top">
@@ -56,11 +58,11 @@ export default function About({ greeting, onStart, onBack, startLabel = 'Começa
         </div>
       </section>
 
-      <section className="about__how" aria-labelledby="como-funciona">
+      <section className="about__how" aria-labelledby="como-funciona" ref={howRef}>
         <h2 id="como-funciona" className="about__subtitle">Como funciona</h2>
         <ol className="about__steps">
           {STEPS.map((s, i) => (
-            <li key={s.title}>
+            <li key={s.title} className="reveal" style={{ '--i': i }}>
               <span className="about__num" aria-hidden="true">{i + 1}</span>
               <div>
                 <strong>{s.title}</strong>

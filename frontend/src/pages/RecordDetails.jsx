@@ -14,7 +14,7 @@ export default function RecordDetails() {
   const { data, error, loading } = useAsync(() => api.patient(id), [id]);
   const [downloading, setDownloading] = useState(false);
 
-  if (loading && !data) return <Screen narrow><Loading /></Screen>;
+  if (loading && !data) return <Screen narrow><Loading count={2} /></Screen>;
   if (error) return <Screen narrow><TopBar title="Detalhes da ficha" /><ErrorText>{error.message}</ErrorText></Screen>;
   const p = data.patient;
 

@@ -370,6 +370,32 @@ export function Avatar({ src, size = 96, busy = false, children }) {
   );
 }
 
-export function Loading() {
-  return <p className="muted center pad">Carregando...</p>;
+/**
+ * Carregando. variant="cards": blocos "esqueleto" no formato dos cartões (listas e detalhes);
+ * variant="page": símbolo do app pulsando no meio da tela (enquanto confere o login).
+ */
+export function Loading({ variant = 'cards', count = 3 }) {
+  if (variant === 'page') {
+    return (
+      <div className="grid min-h-[60vh] place-items-center" role="status">
+        <img src="/favicon.svg" alt="" className="size-14 animate-pulse rounded-xl" />
+        <span className="sr-only">Carregando...</span>
+      </div>
+    );
+  }
+  return (
+    <div className="skeleton-list" role="status">
+      <span className="sr-only">Carregando...</span>
+      {Array.from({ length: count }, (_, i) => (
+        <div key={i} className="skeleton-card" aria-hidden="true">
+          <span className="skeleton h-5 w-2/5" />
+          <span className="skeleton h-4 w-3/4" />
+          <span className="skeleton h-2 w-full" />
+          <div className="flex gap-2">
+            {Array.from({ length: 7 }, (_, j) => <span key={j} className="skeleton size-7" />)}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 }

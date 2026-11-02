@@ -70,14 +70,16 @@ export function MissingRoles({ roles, compact = false }) {
 export function PatientCard({ patient, to }) {
   const s = STATUS[patient.status] || STATUS.PENDENTE;
   return (
-    <Link to={to} className={`card card--link pcard pcard--${s.cls}`} title={`Abrir os detalhes de ${patient.fullName}`}>
+    <Link to={to} className={`group card card--link pcard pcard--${s.cls}`} title={`Abrir os detalhes de ${patient.fullName}`}>
       <div className="pcard__top">
         <StatusTag status={patient.status} />
         <span className="card__id">ID {patient.code}</span>
       </div>
       <div className="card__head">
-        <span className="card__name pcard__name">{patient.fullName}</span>
-        <IconChevronRight size={22} />
+        <span className="card__name pcard__name transition-colors duration-200 group-hover:text-brand-text">{patient.fullName}</span>
+        <span className="inline-flex transition-transform duration-300 ease-out group-hover:translate-x-1">
+          <IconChevronRight size={22} />
+        </span>
       </div>
       <ProgressBar done={patient.sectionsDone} total={patient.totalSections} status={patient.status} />
       <RoleProgress progress={patient.progress} />
@@ -97,7 +99,11 @@ export function IdentificationCard({ patient, to, selectable, selected, onSelect
         )}
         <span className="card__name">{patient.fullName}</span>
         <span className="card__id">ID {patient.code}</span>
-        {to && <IconChevronRight size={22} />}
+        {to && (
+          <span className="inline-flex transition-transform duration-300 ease-out group-hover:translate-x-1">
+            <IconChevronRight size={22} />
+          </span>
+        )}
       </div>
       <ul className="card__list">
         <li>{formatDate(patient.birthDate)}</li>
@@ -109,7 +115,7 @@ export function IdentificationCard({ patient, to, selectable, selected, onSelect
       <p className="card__foot">{footer ?? lastActionLabel(patient.lastAction, patient.lastActionAt)}</p>
     </>
   );
-  if (to) return <Link to={to} className="card card--link" title={`Abrir a ficha de ${patient.fullName}`}>{body}</Link>;
+  if (to) return <Link to={to} className="group card card--link" title={`Abrir a ficha de ${patient.fullName}`}>{body}</Link>;
   if (selectable) {
     return (
       <button type="button" className={`card card--select ${selected ? 'is-selected' : ''}`} onClick={onSelect} aria-pressed={selected} title={`Selecionar ${patient.fullName} para preencher a sua seção`}>

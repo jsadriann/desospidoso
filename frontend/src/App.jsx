@@ -23,7 +23,7 @@ import Preferences from './pages/Preferences.jsx';
 function RequireAuth() {
   const { user, loading } = useApp();
   const location = useLocation();
-  if (loading) return <Loading />;
+  if (loading) return <Loading variant="page" />;
   if (!user) return <Navigate to="/login" replace state={{ from: location.pathname }} />;
   return <Outlet />;
 }
@@ -49,7 +49,7 @@ function Shell() {
 
 function GuestOnly() {
   const { user, loading } = useApp();
-  if (loading) return <Loading />;
+  if (loading) return <Loading variant="page" />;
   if (user) return <Navigate to="/pacientes" replace />;
   return <Outlet />;
 }

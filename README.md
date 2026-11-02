@@ -7,6 +7,7 @@ sistema reúne tudo em uma ficha que ajuda a definir o acolhimento mais adequado
 ## Tecnologias
 
 - Frontend: React, Vite e React Router
+- Estilos e animações: Tailwind CSS 4
 - Backend: Node.js e Express
 - Banco de dados: PostgreSQL (Neon)
 - Fotos de perfil: Object Storage do Neon (compatível com S3)
@@ -27,10 +28,27 @@ desospIdoso/
 │   ├── public/       imagens e logo
 │   └── src/
 │       ├── pages/    telas
-│       └── components/
+│       ├── components/
+│       └── styles.css   tema (Tailwind), componentes e animações
 ├── package.json      scripts de build e start (usados no deploy)
 └── render.yaml       configuração do Render
 ```
+
+## Estilos e animações
+
+Os estilos usam o Tailwind CSS 4, carregado pelo plugin `@tailwindcss/vite`. O arquivo `frontend/src/styles.css` é
+dividido em três partes:
+
+- `@theme`: as cores, a fonte (Inter) e as animações do app. Elas viram classes do Tailwind, como `bg-brand`,
+  `text-ink`, `bg-st-done-bg` e `animate-fade-up`. As cores apontam para variáveis CSS, por isso mudam sozinhas no
+  tema escuro.
+- `@custom-variant dark`: o tema escuro é ativado por `data-theme="dark"` no `<html>` (Perfil > Preferências), e a
+  variante `dark:` do Tailwind segue essa escolha.
+- `@layer components`: os componentes do app (cartões, botões, formulários, telas). Ficam numa camada abaixo das
+  classes utilitárias, então uma classe do Tailwind no JSX sempre pode ajustar um componente.
+
+As animações (entrada das telas e dos cartões, contagem dos números do resumo, barras de progresso, botões, janelas e
+os passos da tela Sobre aparecendo ao rolar) ficam desligadas para quem ativou "reduzir movimento" no aparelho.
 
 ## Como rodar localmente
 

@@ -72,8 +72,8 @@ export default function Help() {
         A barra mostra quantas seções já foram concluídas (por exemplo, 3/7). Abaixo dela, cada função aparece com o seu
         ícone, e ao passar o mouse sobre um ícone aparece o nome da função:
       </p>
-      <p className="help__legend"><RoleProgress progress={[EXAMPLE[0]]} /> <span><strong>Ícone colorido com check:</strong> seção preenchida.</span></p>
-      <p className="help__legend"><RoleProgress progress={[EXAMPLE[6]]} /> <span><strong>Ícone apagado:</strong> seção ainda não preenchida.</span></p>
+      <div className="help__legend"><RoleProgress progress={[EXAMPLE[0]]} /> <span><strong>Ícone colorido com check:</strong> seção preenchida.</span></div>
+      <div className="help__legend"><RoleProgress progress={[EXAMPLE[6]]} /> <span><strong>Ícone apagado:</strong> seção ainda não preenchida.</span></div>
       <p>
         <strong>Falta preencher:</strong> mostra quais funções ainda não preencheram a sua seção. No cartão aparecem os
         nomes quando faltam até 4 funções; acima disso, aparece a quantidade. A lista completa fica no resumo, no topo da

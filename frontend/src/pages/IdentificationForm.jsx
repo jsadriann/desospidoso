@@ -55,7 +55,7 @@ export default function IdentificationForm() {
     }
   };
 
-  if (!loaded) return <Screen narrow>{error ? <ErrorText>{error}</ErrorText> : <Loading />}</Screen>;
+  if (!loaded) return <Screen narrow>{error ? <ErrorText>{error}</ErrorText> : <Loading count={2} />}</Screen>;
 
   return (
     <Screen narrow>

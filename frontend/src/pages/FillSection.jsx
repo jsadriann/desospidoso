@@ -46,7 +46,7 @@ export default function FillSection() {
     }
   };
 
-  if (!patient || !form) return <Screen narrow>{error ? <ErrorText>{error}</ErrorText> : <Loading />}</Screen>;
+  if (!patient || !form) return <Screen narrow>{error ? <ErrorText>{error}</ErrorText> : <Loading count={2} />}</Screen>;
   const editingExisting = patient.myRoleDone;
 
   return (
