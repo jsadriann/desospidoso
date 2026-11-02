@@ -59,11 +59,11 @@ export function RoleProgress({ progress, size = 30 }) {
   );
 }
 
-/** Texto do que falta. No cartão, até 4 funções aparecem pelo nome; acima disso, só a quantidade. */
+/** Texto do que falta. No cartão, até 3 funções aparecem pelo nome; acima disso, só a quantidade. */
 export function MissingRoles({ roles, compact = false }) {
   if (!roles?.length) return null;
-  const text = compact && roles.length > 4 ? `${roles.length} funções` : joinList(roles);
-  return <p className="missing"><strong>Falta preencher:</strong> {text}</p>;
+  const text = compact && roles.length > 3 ? `${roles.length} funções` : joinList(roles);
+  return <p className="missing" title={`Falta preencher: ${joinList(roles)}`}><strong>Falta preencher:</strong> {text}</p>;
 }
 
 /** Cartão da lista "Pacientes": status em cor, progresso, funções e última alteração. */
@@ -83,7 +83,9 @@ export function PatientCard({ patient, to }) {
       </div>
       <ProgressBar done={patient.sectionsDone} total={patient.totalSections} status={patient.status} />
       <RoleProgress progress={patient.progress} />
-      <MissingRoles roles={patient.pendingRoles} compact />
+      {patient.pendingRoles.length
+        ? <MissingRoles roles={patient.pendingRoles} compact />
+        : <p className="missing missing--done">Todas as funções preencheram.</p>}
       <p className="card__foot">{lastActionLabel(patient.lastAction, patient.lastActionAt)}</p>
     </Link>
   );

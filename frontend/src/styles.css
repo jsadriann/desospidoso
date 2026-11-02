@@ -152,7 +152,8 @@ legend { padding: 0; }
 .screen--nav { padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom) + 24px); }
 .screen--fab { padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom) + 104px); }
 .stack { display: flex; flex-direction: column; gap: 20px; }
-.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 20px; align-items: start; }
+/* Todos os cartões da grade com a mesma altura (a do mais alto), em todas as linhas */
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); grid-auto-rows: 1fr; gap: 20px; align-items: stretch; }
 .pad { padding: 24px; }
 .center { text-align: center; }
 .right { text-align: right; margin-top: -8px; }
@@ -365,7 +366,7 @@ legend { padding: 0; }
 .card__id { color: var(--gray); font-size: 14px; white-space: nowrap; }
 .card__line { font-size: 13px; }
 .card__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; font-size: 13px; }
-.card__foot { align-self: flex-end; font-size: 13px; margin-right: 32px; }
+.card__foot { align-self: flex-end; font-size: 13px; margin-right: 32px; margin-top: auto; } /* sempre no pé do cartão */
 .status { display: flex; align-items: center; gap: 8px; font-size: 13px; }
 .status--pending { color: var(--pending); }
 .status--done { color: var(--green-text); }
@@ -414,7 +415,11 @@ legend { padding: 0; }
 .pcard--mine { border-left-color: var(--st-mine); }
 .pcard--done { border-left-color: var(--st-done); }
 .pcard__top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.pcard__name { font-size: 16px; font-weight: 700; }
+.pcard__name { font-size: 16px; font-weight: 700; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* "Falta preencher" ocupa sempre 2 linhas no cartão, para tudo ficar alinhado entre os cartões */
+.pcard .missing {
+  min-height: calc(2 * 1.45em); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
+}
 .pcard .card__foot { margin-right: 0; color: var(--gray); font-size: 12.5px; }
 
 /* Resumo no topo da lista (também filtra por status) */

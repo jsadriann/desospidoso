@@ -76,7 +76,7 @@ export default function Help() {
       <div className="help__legend"><RoleProgress progress={[EXAMPLE[6]]} /> <span><strong>Ícone apagado:</strong> seção ainda não preenchida.</span></div>
       <p>
         <strong>Falta preencher:</strong> mostra quais funções ainda não preencheram a sua seção. No cartão aparecem os
-        nomes quando faltam até 4 funções; acima disso, aparece a quantidade. A lista completa fica no resumo, no topo da
+        nomes quando faltam até 3 funções; acima disso, aparece a quantidade. A lista completa fica no resumo, no topo da
         tela de detalhes do paciente.
       </p>
       <p><strong>Atenção:</strong> A identificação do paciente não aparece no progresso.</p>
