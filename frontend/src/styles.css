@@ -49,7 +49,6 @@
   --animate-grow-x: grow-x 0.9s var(--ease-out-soft) both;
   --animate-shimmer: shimmer 1.4s linear infinite;
   --animate-float: float 6s ease-in-out infinite;
-  --animate-pulse-ring: pulse-ring 2.4s var(--ease-out-soft) infinite;
   --animate-wiggle: wiggle 0.5s ease-in-out;
 
   @keyframes fade-in { from { opacity: 0; } }
@@ -61,10 +60,6 @@
   @keyframes grow-x { from { transform: scaleX(0); } }
   @keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
   @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-  @keyframes pulse-ring {
-    0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--green) 45%, transparent); }
-    70%, 100% { box-shadow: 0 0 0 16px color-mix(in srgb, var(--green) 0%, transparent); }
-  }
   @keyframes wiggle { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-8deg); } 75% { transform: rotate(8deg); } }
 }
 
@@ -435,7 +430,7 @@ legend { padding: 0; }
   position: absolute; left: 22px; bottom: 16px; z-index: 2;
   display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 14px;
   border: 0; border-radius: 999px; background: var(--green); color: #fff; font-size: 13px; font-weight: 600;
-  box-shadow: 0 6px 16px color-mix(in srgb, var(--green) 35%, transparent); cursor: pointer;
+  cursor: pointer;
   opacity: 0; transform: translateY(8px); pointer-events: none;
   transition: opacity .2s ease, transform .3s var(--ease-out-soft), background-color .2s;
 }
@@ -543,7 +538,7 @@ legend { padding: 0; }
 .select-bar__count { font-size: 14px; }
 .select-bar .btn--sm { display: inline-flex; align-items: center; gap: 8px; }
 .btn--danger { background: var(--red); border-color: var(--red); color: #fff; }
-.btn--danger:hover:not(:disabled) { background: color-mix(in srgb, var(--red) 85%, #000); transform: translateY(-2px); box-shadow: 0 8px 20px color-mix(in srgb, var(--red) 30%, transparent); }
+.btn--danger:hover:not(:disabled) { background: color-mix(in srgb, var(--red) 85%, #000); transform: translateY(-2px); }
 :root[data-theme='dark'] .btn--danger { color: #111318; }
 @media (min-width: 1024px) { .select-bar { bottom: 20px; } }
 
@@ -678,7 +673,6 @@ legend { padding: 0; }
   right: var(--gutter);
   width: 64px; height: 64px; border-radius: 50%; border: 0; cursor: pointer;
   background: var(--green); color: #fff; display: grid; place-items: center;
-  box-shadow: 0 6px 18px rgba(36, 99, 23, 0.35);
 }
 .fab:hover { background: var(--green-hover); }
 
@@ -939,7 +933,6 @@ legend { padding: 0; }
     width: 28px; height: 28px; border-radius: 50%; padding: 0; cursor: pointer;
     display: grid; place-items: center;
     background: var(--bg); color: var(--text); border: 1px solid var(--toggle-border);
-    box-shadow: 0 2px 6px rgba(22, 25, 37, 0.12);
     transition: background 0.15s, color 0.15s, border-color 0.15s;
   }
   .side-nav__toggle:hover { background: var(--green); border-color: var(--green); color: #fff; }
@@ -1045,10 +1038,10 @@ legend { padding: 0; }
 .roles__check { animation: var(--animate-pop); animation-delay: 650ms; }
 
 /* Botões: sobem ao passar o mouse e "afundam" ao clicar */
-.btn { transition: background-color .2s, color .2s, border-color .2s, transform .2s var(--ease-out-soft), box-shadow .25s; }
-.btn--primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 20px color-mix(in srgb, var(--green) 32%, transparent); }
+.btn { transition: background-color .2s, color .2s, border-color .2s, transform .2s var(--ease-out-soft); }
+.btn--primary:hover:not(:disabled) { transform: translateY(-2px); }
 .btn--outline:hover:not(:disabled) { transform: translateY(-2px); }
-.btn:active:not(:disabled) { transform: translateY(0) scale(.97); box-shadow: none; }
+.btn:active:not(:disabled) { transform: translateY(0) scale(.97); }
 .icon-btn { transition: background-color .2s, transform .15s var(--ease-out-soft); }
 .icon-btn:hover { background: var(--hover); }
 .icon-btn--ring:hover { background: var(--hover); }
@@ -1057,9 +1050,9 @@ legend { padding: 0; }
 .tab:hover:not(.tab--active) { background: var(--hover); }
 .tab:active { transform: scale(.96); }
 
-/* Botão "+" flutuante: aparece com um salto, chama atenção duas vezes e gira o "+" no hover */
+/* Botão "+" flutuante: aparece com um salto e gira o "+" no hover (botões sem sombra) */
 .fab {
-  animation: var(--animate-pop), pulse-ring 2.4s var(--ease-out-soft) 900ms 2;
+  animation: var(--animate-pop);
   transition: background-color .2s, transform .3s var(--ease-spring);
 }
 .fab:hover { transform: rotate(90deg) scale(1.06); }
@@ -1141,7 +1134,7 @@ legend { padding: 0; }
 .about__intro > *:nth-child(4) { animation-delay: 320ms; }
 .about__intro > *:nth-child(5) { animation-delay: 400ms; }
 .about__intro > *:nth-child(6) { animation-delay: 480ms; }
-.about__intro .btn { animation: var(--animate-fade-up), pulse-ring 2.4s var(--ease-out-soft) 1.2s 2; animation-delay: 480ms, 1.2s; }
+.about__intro .btn { animation: var(--animate-fade-up); animation-delay: 480ms; }
 
 /* Elementos que aparecem ao rolar a página (ver o hook useReveal) */
 .reveal { opacity: 0; transform: translateY(18px); transition: opacity .6s var(--ease-out-soft), transform .6s var(--ease-out-soft); transition-delay: calc(var(--i, 0) * 120ms); }
